@@ -1,0 +1,6 @@
+# 게임 파일만 저장하고, 나머지(과제 파일 등)는 git이 무시하게 하기
+/*
+!/.gitignore
+!/index.html
+!/world-war-3/
+!/korea-series/

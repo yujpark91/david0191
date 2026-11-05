@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOREA SERIES - 야구 타격 게임</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0b1424;
+    color: #fff;
+    font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 30px;
+    margin-bottom: 10px;
+    color: #ffffff;
+    letter-spacing: 6px;
+    text-shadow: 0 0 10px #4da3ff, 2px 2px 0 #c8102e;
+  }
+
+  /* 게임 화면을 감싸는 상자 */
+  #wrap {
+    position: relative;
+    width: 960px;
+    max-width: 96vw;
+    aspect-ratio: 3 / 2;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 3px solid #23395d;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  /* 시작 / 끝 화면 */
+  #overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 14, 28, 0.78);
+    border-radius: 8px;
+  }
+  #overlay.hidden { display: none; }
+
+  #bigText {
+    font-size: 72px;
+    font-weight: bold;
+    margin-bottom: 14px;
+    letter-spacing: 4px;
+  }
+
+  #subText {
+    font-size: 18px;
+    margin-bottom: 28px;
+    color: #dfe8f7;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 24px;
+    padding: 14px 44px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(#ff4d5e, #c8102e);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px #ff4d5e88;
+  }
+  button:hover { transform: scale(1.05); }
+
+  #help {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #8a9bb8;
+  }
+</style>
+</head>
+<body>
+
+<h1>KOREA SERIES</h1>
+
+<div id="wrap">
+  <canvas id="game" width="960" height="640"></canvas>
+
+  <div id="overlay">
+    <div id="bigText"></div>
+    <div id="subText"></div>
+    <button id="startBtn">게임 시작</button>
+  </div>
+</div>
+
+<p id="help">타격: 마우스 클릭 또는 스페이스바 &nbsp;|&nbsp; 공이 하얀 원에 딱 들어올 때 치세요!</p>
+
+<script>
+// ===== 기본 준비 =====
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;   // 960
+const H = canvas.height;  // 640
+
+const overlay = document.getElementById('overlay');
+const bigText = document.getElementById('bigText');
+const subText = document.getElementById('subText');
+const startBtn = document.getElementById('startBtn');
+
+const TOTAL_BALLS = 10;     // 공 10개
+const RELEASE_Y = 285;      // 투수가 공을 놓는 높이
+const HIT_Y = 480;          // 공을 쳐야 하는 높이 (타격 지점)
+const HOME_X = W / 2;
+
+// 타이밍 기준 (밀리초 = 1000분의 1초)
+const HOMERUN_RANGE = 35;   // 이만큼 정확하면 홈런
+const HIT_RANGE = 100;      // 이만큼 안이면 안타
+
+// 점수
+const POINTS = { homerun: 100, hit: 30, miss: 0 };
+
+// 구종 (공 종류)
+const PITCHES = [
+  { name: '직구',     time: 560, kmh: [145, 152], curve: 0 },
+  { name: '커브',     time: 820, kmh: [115, 124], curve: 40 },
+  { name: '슬라이더', time: 680, kmh: [130, 138], curve: -30 },
+  { name: '체인지업', time: 760, kmh: [122, 130], curve: 12 }
+];
+
+// 관중석 (처음에 한 번만 만들어 둠)
+const crowd = [];
+for (let i = 0; i < 420; i++) {
+  crowd.push({
+    x: Math.random() * W,
+    y: 10 + Math.random() * 92,
+    c: ['#ff4d5e', '#4da3ff', '#ffffff', '#ffd23f', '#9be15d', '#ff9f1c'][Math.floor(Math.random() * 6)],
+    jump: Math.random() * Math.PI * 2
+  });
+}
+
+// 게임 상태
+// phase: 'ready'(시작 전) 'windup'(투구 준비) 'pitch'(공 날아오는 중)
+//        'flight'(친 공 날아가는 중) 'result'(결과 보기) 'end'(끝)
+let phase = 'ready';
+let phaseTimer = 0;
+let ballNo, score, homeruns, hits, misses;
+let pitch = null;          // 지금 던진 공 정보
+let swung = false;         // 이번 공에 방망이를 휘둘렀는지
+let swingFrame = -1;       // 방망이 휘두르는 애니메이션 진행
+let flight = null;         // 친 공이 날아가는 정보
+let result = null;         // 화면에 보여줄 결과 글자
+let particles = [];        // 홈런 불꽃
+let cheer = 0;             // 관중 환호 (높을수록 크게 들썩임)
+let frame = 0;
+
+// ===== 게임 시작 / 끝 =====
+function resetGame() {
+  ballNo = 0;
+  score = 0;
+  homeruns = 0;
+  hits = 0;
+  misses = 0;
+  pitch = null;
+  flight = null;
+  result = null;
+  particles = [];
+  swingFrame = -1;
+}
+
+function showOverlay(title, color, sub, btnText) {
+  bigText.textContent = title;
+  bigText.style.color = color;
+  bigText.style.textShadow = '0 0 24px ' + color + ', 3px 3px 0 #000';
+  subText.innerHTML = sub;
+  startBtn.textContent = btnText;
+  overlay.classList.remove('hidden');
+}
+
+function startGame() {
+  resetGame();
+  overlay.classList.add('hidden');
+  startBtn.blur();
+  startWindup();
+}
+
+function endGame() {
+  phase = 'end';
+  let grade;
+  if (score >= 600)      grade = '🏆 한국시리즈 MVP!';
+  else if (score >= 350) grade = '⭐ 팀의 4번 타자';
+  else if (score >= 150) grade = '👍 기대되는 유망주';
+  else                   grade = '💪 연습이 더 필요해요';
+
+  setTimeout(() => {
+    showOverlay('경기 종료', '#ffd23f',
+      '점수: <b>' + score + '점</b><br>' +
+      '홈런 ' + homeruns + '개 · 안타 ' + hits + '개 · 아웃 ' + misses + '개<br>' +
+      grade, '다시 하기');
+  }, 600);
+}
+
+startBtn.addEventListener('click', startGame);
+
+// 투수가 공 던질 준비 (매번 시간이 조금씩 달라서 예측하기 어렵게)
+function startWindup() {
+  phase = 'windup';
+  phaseTimer = 70 + Math.floor(Math.random() * 50);
+  swung = false;
+  pitch = null;
+  flight = null;
+  result = null;
+}
+
+// 공 던지기
+function throwPitch() {
+  const type = PITCHES[Math.floor(Math.random() * PITCHES.length)];
+  pitch = {
+    name: type.name,
+    time: type.time,                    // 공이 타격 지점까지 오는 시간
+    kmh: type.kmh[0] + Math.floor(Math.random() * (type.kmh[1] - type.kmh[0] + 1)),
+    curve: type.curve,                  // 휘어지는 정도
+    endX: (Math.random() - 0.5) * 30,   // 들어오는 위치 (조금씩 다름)
+    start: performance.now()
+  };
+  phase = 'pitch';
+}
+
+// 공이 지금 얼마나 왔는지 (0 = 투수 손, 1 = 타격 지점)
+function pitchProgress() {
+  return (performance.now() - pitch.start) / pitch.time;
+}
+
+// 공의 화면 위치
+function ballPos(p) {
+  const x = HOME_X + pitch.endX * p + Math.sin(Math.min(p, 1) * Math.PI) * pitch.curve;
+  const y = RELEASE_Y + (HIT_Y - RELEASE_Y) * p;
+  const r = 2.5 + p * 8;  // 가까워질수록 커짐
+  return { x, y, r };
+}
+
+// ===== 타격 =====
+function swing() {
+  if (phase !== 'windup' && phase !== 'pitch') return;
+  if (swung) return;
+  swung = true;
+  swingFrame = 0;
+
+  // 공을 던지기도 전에 휘두름
+  if (phase === 'windup') {
+    judge(-9999);
+    return;
+  }
+  // 차이 = 휘두른 시간 - 딱 맞는 시간 (음수면 빠름, 양수면 늦음)
+  const diff = (performance.now() - pitch.start) - pitch.time;
+  judge(diff);
+}
+
+function judge(diff) {
+  const gap = Math.abs(diff);
+  const early = diff < 0;
+
+  if (gap <= HOMERUN_RANGE) {
+    homeruns++;
+    score += POINTS.homerun;
+    showResult('홈런!', '#ffd23f', '타이밍 완벽! +' + POINTS.homerun + '점');
+    startFlight(diff, true);
+  } else if (gap <= HIT_RANGE) {
+    hits++;
+    score += POINTS.hit;
+    showResult('안타!', '#7fe0ff', (early ? '조금 빨랐어요' : '조금 늦었어요') + ' +' + POINTS.hit + '점');
+    startFlight(diff, false);
+  } else {
+    misses++;
+    showResult('헛스윙!', '#ff5a5a', early ? '너무 빨랐어요' : '너무 늦었어요');
+    ballNo++;
+    phase = 'result';
+    phaseTimer = 100;
+  }
+}
+
+// 방망이를 안 휘두르고 공을 그냥 보냄
+function lookStrike() {
+  misses++;
+  showResult('스트라이크!', '#ff9f9f', '방망이를 휘두르지 않았어요');
+  ballNo++;
+  phase = 'result';
+  phaseTimer = 100;
+}
+
+function showResult(text, color, sub) {
+  result = { text, color, sub, t: 0 };
+}
+
+// 친 공이 날아가기 시작
+function startFlight(diff, homerun) {
+  const start = ballPos(1);
+  // 빨리 치면 왼쪽, 늦게 치면 오른쪽으로 날아감
+  const side = Math.max(-1, Math.min(1, diff / HIT_RANGE));
+  const spread = side * 280 + (Math.random() - 0.5) * 120;
+  flight = {
+    x0: start.x, y0: start.y,
+    x1: HOME_X + spread,
+    y1: homerun ? 40 + Math.random() * 50 : 200 + Math.random() * 120,
+    peak: homerun ? 260 : 90,   // 얼마나 높이 뜨는지
+    dur: homerun ? 85 : 55,     // 날아가는 시간 (화면 수)
+    t: 0,
+    homerun: homerun
+  };
+  pitch.hit = true;
+  cheer = homerun ? 1 : 0.5;
+  ballNo++;
+  phase = 'flight';
+}
+
+// 홈런 불꽃놀이
+function fireworks(x, y) {
+  for (let i = 0; i < 60; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = Math.random() * 4 + 1;
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+      life: 50 + Math.random() * 30,
+      c: ['#ffd23f', '#ff4d5e', '#4da3ff', '#ffffff', '#9be15d'][Math.floor(Math.random() * 5)]
+    });
+  }
+}
+
+// ===== 키보드 / 마우스 =====
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (!e.repeat) swing();
+  }
+});
+canvas.addEventListener('mousedown', swing);
+
+// ===== 게임 흐름 계산 =====
+function update() {
+  if (swingFrame >= 0) {
+    swingFrame++;
+    if (swingFrame > 30) swingFrame = -1;
+  }
+  if (result) result.t++;
+  cheer *= 0.985;
+
+  if (phase === 'windup') {
+    phaseTimer--;
+    if (phaseTimer <= 0) throwPitch();
+
+  } else if (phase === 'pitch') {
+    // 안 휘두르고 공이 지나감
+    if (!swung && pitchProgress() > 1.25) lookStrike();
+
+  } else if (phase === 'flight') {
+    flight.t++;
+    if (flight.t >= flight.dur) {
+      if (flight.homerun) fireworks(flight.x1, flight.y1);
+      phase = 'result';
+      phaseTimer = flight.homerun ? 110 : 70;
+    }
+
+  } else if (phase === 'result') {
+    phaseTimer--;
+    if (phaseTimer <= 0) {
+      if (ballNo >= TOTAL_BALLS) endGame();
+      else startWindup();
+    }
+  }
+
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.06;
+    p.life--;
+  }
+  particles = particles.filter(p => p.life > 0);
+}
+
+// ===== 그리기 =====
+function drawStadium() {
+  // 관중석
+  ctx.fillStyle = '#1a2238';
+  ctx.fillRect(0, 0, W, 112);
+  for (const c of crowd) {
+    const bounce = Math.sin(frame * 0.3 + c.jump) * cheer * 4;
+    ctx.fillStyle = c.c;
+    ctx.fillRect(c.x, c.y - Math.max(0, bounce), 4, 5);
+  }
+
+  // 외야 담장
+  ctx.fillStyle = '#16452c';
+  ctx.fillRect(0, 108, W, 20);
+  ctx.fillStyle = '#ffd23f';
+  ctx.fillRect(0, 108, W, 3);
+
+  // 잔디 (줄무늬)
+  for (let i = 0; i < 12; i++) {
+    ctx.fillStyle = i % 2 === 0 ? '#2f8a3e' : '#349a45';
+    ctx.fillRect(0, 128 + i * 43, W, 43);
+  }
+
+  // 흙으로 된 내야 (다이아몬드 모양)
+  ctx.fillStyle = '#b5814f';
+  ctx.beginPath();
+  ctx.moveTo(HOME_X, 610);
+  ctx.lineTo(800, 400);
+  ctx.lineTo(HOME_X, 250);
+  ctx.lineTo(160, 400);
+  ctx.closePath();
+  ctx.fill();
+
+  // 내야 잔디
+  ctx.fillStyle = '#349a45';
+  ctx.beginPath();
+  ctx.moveTo(HOME_X, 530);
+  ctx.lineTo(690, 400);
+  ctx.lineTo(HOME_X, 300);
+  ctx.lineTo(270, 400);
+  ctx.closePath();
+  ctx.fill();
+
+  // 파울 라인
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(HOME_X, 570); ctx.lineTo(0, 175);
+  ctx.moveTo(HOME_X, 570); ctx.lineTo(W, 175);
+  ctx.stroke();
+
+  // 베이스
+  ctx.fillStyle = '#ffffff';
+  for (const b of [[750, 400], [HOME_X, 262], [210, 400]]) {
+    ctx.save();
+    ctx.translate(b[0], b[1]);
+    ctx.scale(1, 0.5);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-7, -7, 14, 14);
+    ctx.restore();
+  }
+
+  // 투수 마운드
+  ctx.fillStyle = '#c4915c';
+  ctx.beginPath();
+  ctx.ellipse(HOME_X, 330, 46, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 홈 플레이트 주변 흙
+  ctx.fillStyle = '#b5814f';
+  ctx.beginPath();
+  ctx.ellipse(HOME_X, 560, 150, 55, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 타석 선
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(HOME_X - 110, 525, 70, 60);
+  ctx.strokeRect(HOME_X + 40, 525, 70, 60);
+
+  // 홈 플레이트
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(HOME_X - 18, 548);
+  ctx.lineTo(HOME_X + 18, 548);
+  ctx.lineTo(HOME_X + 18, 556);
+  ctx.lineTo(HOME_X, 566);
+  ctx.lineTo(HOME_X - 18, 556);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// 투수 (빨간 유니폼)
+function drawPitcher() {
+  const x = HOME_X, y = 322;
+  // 와인드업 진행 (0 → 1)
+  let wind = 0;
+  if (phase === 'windup') wind = Math.max(0, 1 - phaseTimer / 40);
+  const throwing = phase === 'pitch' && pitchProgress() < 0.25;
+
+  ctx.save();
+  ctx.translate(x, y);
+
+  // 다리 (와인드업 때 한쪽 다리를 들어 올림)
+  ctx.strokeStyle = '#eeeeee';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-3, -14); ctx.lineTo(-6, 0);
+  ctx.moveTo(3, -14); ctx.lineTo(6 + wind * 6, -wind * 10);
+  ctx.stroke();
+
+  // 몸
+  ctx.fillStyle = '#c8102e';
+  ctx.fillRect(-8, -34, 16, 22);
+
+  // 던지는 팔
+  ctx.strokeStyle = '#c8102e';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(6, -30);
+  if (throwing) {
+    ctx.lineTo(2, -18);        // 팔을 앞으로 내림
+  } else {
+    ctx.lineTo(10 + wind * 6, -34 - wind * 14);  // 팔을 뒤로 올림
+  }
+  ctx.stroke();
+  // 글러브 손
+  ctx.strokeStyle = '#c8102e';
+  ctx.beginPath();
+  ctx.moveTo(-6, -30); ctx.lineTo(-10, -22);
+  ctx.stroke();
+  ctx.fillStyle = '#6b3b1a';
+  ctx.beginPath(); ctx.arc(-10, -21, 4, 0, Math.PI * 2); ctx.fill();
+
+  // 머리와 모자
+  ctx.fillStyle = '#f2c9a0';
+  ctx.beginPath(); ctx.arc(0, -40, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1a2a5a';
+  ctx.beginPath(); ctx.arc(0, -42, 6, Math.PI, 0); ctx.fill();
+  ctx.fillRect(-2, -43, 9, 2);
+
+  ctx.restore();
+}
+
+// 포수 (뒷모습)
+function drawCatcher() {
+  const x = HOME_X, y = 612;
+  ctx.fillStyle = '#1a2a5a';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 30, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#2a3d7a';
+  ctx.beginPath(); ctx.arc(x, y - 22, 13, 0, Math.PI * 2); ctx.fill();
+  // 미트 (포수 장갑)
+  ctx.fillStyle = '#8b4a1c';
+  ctx.beginPath(); ctx.arc(x + 4, y - 44, 11, 0, Math.PI * 2); ctx.fill();
+}
+
+// 타자 (파란 유니폼, 타석 왼쪽)
+function drawBatter() {
+  const x = HOME_X - 75, y = 560;
+
+  // 방망이 각도: 기다릴 때는 어깨 위로, 휘두르면 앞으로 크게 돌아감
+  let bat = -2.3;
+  if (swingFrame >= 0) {
+    const t = Math.min(1, swingFrame / 9);
+    bat = -2.3 + t * 3.9;
+  }
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineCap = 'round';
+
+  // 다리
+  ctx.strokeStyle = '#e8e8e8';
+  ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.moveTo(-6, -40); ctx.lineTo(-16, 0);
+  ctx.moveTo(6, -40); ctx.lineTo(18, 0);
+  ctx.stroke();
+
+  // 몸
+  ctx.fillStyle = '#1f5fbf';
+  ctx.fillRect(-14, -84, 28, 46);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('7', 0, -56);
+
+  // 손 위치 (방망이 잡은 곳)
+  const hx = 22, hy = -78;
+
+  // 팔
+  ctx.strokeStyle = '#1f5fbf';
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(10, -78); ctx.lineTo(hx, hy);
+  ctx.stroke();
+
+  // 방망이
+  ctx.save();
+  ctx.translate(hx, hy);
+  ctx.rotate(bat);
+  ctx.strokeStyle = '#d9a35c';
+  ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(42, 0); ctx.stroke();
+  ctx.lineWidth = 10;
+  ctx.beginPath(); ctx.moveTo(40, 0); ctx.lineTo(78, 0); ctx.stroke();
+  ctx.restore();
+
+  // 헬멧
+  ctx.fillStyle = '#f2c9a0';
+  ctx.beginPath(); ctx.arc(0, -94, 11, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#123a80';
+  ctx.beginPath(); ctx.arc(0, -97, 12, Math.PI, 0); ctx.fill();
+  ctx.fillRect(-12, -98, 24, 4);
+
+  ctx.restore();
+}
+
+// 날아오는 공과 타이밍 원
+function drawPitch() {
+  if (!pitch || pitch.hit) return;
+  const p = pitchProgress();
+  if (p > 1.45) return;
+  const b = ballPos(p);
+  const target = ballPos(1);
+
+  // 타이밍 원: 공이 다가올수록 작아져서 공 크기와 같아지면 칠 때!
+  if (p < 1 && !swung) {
+    const ringR = target.r + (1 - p) * 70;
+    ctx.strokeStyle = p > 0.85 ? 'rgba(255,230,90,0.95)' : 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(target.x, target.y, ringR, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(target.x, target.y, target.r + 2, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // 지나간 뒤에는 포수 쪽으로 계속 감
+  const y = p <= 1 ? b.y : HIT_Y + (p - 1) * (HIT_Y - RELEASE_Y);
+  drawBall(b.x, y, b.r);
+}
+
+function drawBall(x, y, r) {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(x, y + r + 4, r, r * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  if (r > 5) {
+    // 빨간 실밥
+    ctx.strokeStyle = '#d6203a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x - r * 0.9, y, r * 0.7, -0.9, 0.9); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + r * 0.9, y, r * 0.7, Math.PI - 0.9, Math.PI + 0.9); ctx.stroke();
+  }
+}
+
+// 친 공이 날아가는 모습
+function drawFlight() {
+  if (!flight) return;
+  const t = Math.min(1, flight.t / flight.dur);
+  const x = flight.x0 + (flight.x1 - flight.x0) * t;
+  const y = flight.y0 + (flight.y1 - flight.y0) * t;
+  const h = flight.peak * 4 * t * (1 - t);   // 포물선 높이
+  const r = 10 - t * 6;                       // 멀어질수록 작아짐
+
+  // 땅 그림자
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+  // 공
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(x, y - h, r, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life / 80);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// 전광판
+function drawScoreboard() {
+  ctx.fillStyle = 'rgba(5, 10, 20, 0.85)';
+  ctx.fillRect(14, 140, 200, 130);
+  ctx.strokeStyle = '#ffd23f';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(14, 140, 200, 130);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 18px "Malgun Gothic", sans-serif';
+  ctx.fillStyle = '#ffd23f';
+  ctx.fillText('점수  ' + score, 28, 162);
+
+  ctx.font = '16px "Malgun Gothic", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('공  ' + Math.min(ballNo + (phase === 'windup' || phase === 'pitch' ? 1 : 0), TOTAL_BALLS) + ' / ' + TOTAL_BALLS, 28, 192);
+  ctx.fillText('홈런 ' + homeruns + '  안타 ' + hits + '  아웃 ' + misses, 28, 218);
+
+  // 남은 공 표시 (동그라미)
+  for (let i = 0; i < TOTAL_BALLS; i++) {
+    ctx.fillStyle = i < ballNo ? '#555' : '#ffffff';
+    ctx.beginPath();
+    ctx.arc(32 + i * 18, 248, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 구종과 구속 (공을 던진 뒤에 보여줌)
+  if (pitch && phase !== 'windup') {
+    ctx.fillStyle = 'rgba(5, 10, 20, 0.85)';
+    ctx.fillRect(W - 194, 140, 180, 60);
+    ctx.strokeStyle = '#4da3ff';
+    ctx.strokeRect(W - 194, 140, 180, 60);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px "Malgun Gothic", sans-serif';
+    ctx.fillText(pitch.name, W - 104, 160);
+    ctx.fillStyle = '#7fe0ff';
+    ctx.font = 'bold 16px "Malgun Gothic", sans-serif';
+    ctx.fillText(pitch.kmh + ' km/h', W - 104, 184);
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+
+// 가운데 큰 결과 글자
+function drawResult() {
+  if (!result) return;
+  const pop = Math.min(1, result.t / 8);       // 톡 튀어나오는 효과
+  const size = 40 + pop * 50;
+
+  ctx.textAlign = 'center';
+  ctx.font = 'bold ' + size + 'px "Malgun Gothic", sans-serif';
+  ctx.fillStyle = '#000';
+  ctx.fillText(result.text, W / 2 + 4, 224);
+  ctx.fillStyle = result.color;
+  ctx.fillText(result.text, W / 2, 220);
+
+  ctx.font = 'bold 22px "Malgun Gothic", sans-serif';
+  ctx.fillStyle = '#000';
+  ctx.fillText(result.sub, W / 2 + 2, 262);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(result.sub, W / 2, 260);
+}
+
+function draw() {
+  drawStadium();
+  drawPitcher();
+  drawPitch();
+  drawCatcher();
+  drawBatter();
+  drawFlight();
+  drawParticles();
+  drawScoreboard();
+  drawResult();
+
+  // 투구 준비 중 안내
+  if (phase === 'windup' && phaseTimer > 40) {
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 20px "Malgun Gothic", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('투수가 공을 던질 준비를 하고 있어요...', W / 2, 228);
+  }
+}
+
+// ===== 계속 반복되는 게임 흐름 =====
+function loop() {
+  frame++;
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// 처음 화면
+resetGame();
+showOverlay('KOREA SERIES', '#ffffff',
+  '투수가 던진 공을 타이밍 맞춰 쳐라!<br>' +
+  '마우스 클릭 또는 스페이스바로 스윙<br>' +
+  '홈런 ' + POINTS.homerun + '점 · 안타 ' + POINTS.hit + '점 · 헛스윙 0점 &nbsp;|&nbsp; 공은 ' + TOTAL_BALLS + '개!',
+  '게임 시작');
+loop();
+</script>
+</body>
+</html>
