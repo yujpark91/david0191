@@ -137,6 +137,9 @@ body:not(.ingame) .game-only{display:none !important}
 .lvgrid .rec{color:var(--good)}
 .playpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .playpick .mbig{padding:18px 14px}
+.practiceCorner{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-top:10px}
+.practiceCorner #practiceOpts{width:100%;max-width:320px}
+#practiceBtn.on{border-color:var(--accent);color:var(--accent)}
 .playbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--panel2);font-weight:700;font-size:13.5px}
 .namerow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .namerow label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute);font-weight:600}
@@ -272,8 +275,15 @@ body:not(.ingame) .game-only{display:none !important}
     <div id="pickView">
       <h3>먼저 플레이 방식을 골라 주세요</h3>
       <div class="playpick">
-        <button class="mbig" data-play="solo"><b>👤 개인 플레이</b><small>혼자서 · 제한 시간 5분</small><small>연습 모드도 여기 있어요</small></button>
+        <button class="mbig" data-play="solo"><b>👤 개인 플레이</b><small>혼자서 · 제한 시간 5분</small></button>
         <button class="mbig" data-play="multi"><b>👥 멀티 플레이</b><small>2명이 번갈아 · 제한 시간 20분</small><small>목표 점수 2배</small></button>
+      </div>
+      <div class="practiceCorner">
+        <button class="sm" id="practiceBtn">🎯 연습 모드 ▾</button>
+        <div class="seg" id="practiceOpts" style="display:none">
+          <button data-go="p3c">3구 연습<small>배치 · 자동 조준 · 예상 경로</small></button>
+          <button data-go="p4b">4구 연습<small>배치 · 자동 조준 · 예상 경로</small></button>
+        </div>
       </div>
     </div>
     <div id="gameView">
@@ -296,13 +306,6 @@ body:not(.ingame) .game-only{display:none !important}
       <button class="mbig" data-go="g4b:0"><b>쉬움</b><small class="goal">5점</small><small class="rec"></small></button>
       <button class="mbig" data-go="g4b:1"><b>보통</b><small class="goal">7점 + 쓰리쿠 1개</small><small class="rec"></small></button>
       <button class="mbig" data-go="g4b:2"><b>어려움</b><small class="goal">10점 + 쓰리쿠 2개</small><small class="rec"></small></button>
-    </div>
-    <div id="practiceSec">
-    <h3>연습 모드</h3>
-    <div class="seg">
-      <button data-go="p3c">3구 연습<small>배치 · 자동 조준 · 예상 경로</small></button>
-      <button data-go="p4b">4구 연습<small>배치 · 자동 조준 · 예상 경로</small></button>
-    </div>
     </div>
     <h3>큐대 선택 <span style="font-weight:600">— 모양만 달라요 (힘·회전은 모두 같아요)</span></h3>
     <div class="cuelist" id="cueList"></div>
@@ -1748,7 +1751,6 @@ function paintMenu() {
   $('gameView').style.display = playMode ? '' : 'none';
   $('playLabel').textContent = multi ? '👥 멀티 플레이 (2명)' : '👤 개인 플레이';
   $('multiNames').style.display = multi ? '' : 'none';
-  $('practiceSec').style.display = multi ? 'none' : '';
   document.querySelectorAll('#menuModal .tlim').forEach(s => s.textContent = multi ? '20분' : '5분');
   document.querySelectorAll('#menuModal [data-go]').forEach(bt => {
     const go = bt.dataset.go; if (go[0] !== 'g') return;
@@ -1771,6 +1773,13 @@ document.querySelectorAll('#menuModal [data-go]').forEach(bt => bt.onclick = () 
   if (go[0] === 'g') startGame(t, +go.slice(4), playMode === 'multi'); else startPractice(t);
 });
 document.querySelectorAll('#menuModal [data-play]').forEach(bt => bt.onclick = () => { playMode = bt.dataset.play; paintMenu(); });
+// 방식 고르는 화면 오른쪽 아래: 연습 모드 열고 닫기
+$('practiceBtn').onclick = () => {
+  const open = $('practiceOpts').style.display === 'none';
+  $('practiceOpts').style.display = open ? '' : 'none';
+  $('practiceBtn').classList.toggle('on', open);
+  $('practiceBtn').textContent = '🎯 연습 모드 ' + (open ? '▴' : '▾');
+};
 $('playChange').onclick = () => {
   if (S.game && !S.game.over) { $('menuSub').textContent = '게임 중에는 방식을 못 바꿔요 — 먼저 게임을 그만두세요.'; return; }
   playMode = null; paintMenu();
