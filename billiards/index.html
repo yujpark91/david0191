@@ -830,7 +830,8 @@ const S = {
 };
 
 const $ = id => document.getElementById(id);
-const cv = $('tbl'), ctx = cv.getContext('2d');
+const cv = $('tbl');
+let ctx = cv.getContext('2d');
 const sc = $('spin'), sx = sc.getContext('2d');
 
 // ---------- geometry / layout ----------
@@ -1068,8 +1069,9 @@ function qrot(q, v) {
 const AX = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 function drawBall(x, y, q, color, isCue) {
   const [px, py] = toScr(x, y), r = S.p.R * S.s;
+  const sh = shadowSprite(r), pad = sh.pad;
+  ctx.drawImage(sh.c, px + r * 0.15 - r - pad, py + r * 0.2 - r - pad, 2 * (r + pad), 2 * (r + pad));
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = r * 0.6; ctx.shadowOffsetX = r * 0.15; ctx.shadowOffsetY = r * 0.2;
   const g = ctx.createRadialGradient(px - r * 0.35, py - r * 0.4, r * 0.1, px, py, r);
   g.addColorStop(0, '#fff'); g.addColorStop(0.45, color); g.addColorStop(1, shade(color));
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, r, 0, 7); ctx.fill();
@@ -1087,11 +1089,39 @@ function drawBall(x, y, q, color, isCue) {
   // 내 공 표시 흰 원: 공이 굴러가는 동안(S.playing)에는 숨김
   if (isCue && !S.playing) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(px, py, r + 3, 0, 7); ctx.stroke(); }
 }
+// 공 그림자를 한 번만 흐리게 그려 두고 매 프레임 복사해서 씀 (shadowBlur는 매번 그리면 무거움)
+let shadowCache = null;
+function shadowSprite(r) {
+  const dpr = window.devicePixelRatio || 1;
+  if (shadowCache && shadowCache.r === r && shadowCache.dpr === dpr) return shadowCache;
+  const pad = Math.ceil(r * 0.9), size = 2 * (r + pad);
+  const c = document.createElement('canvas'); c.width = Math.ceil(size * dpr); c.height = Math.ceil(size * dpr);
+  const g = c.getContext('2d'); g.scale(dpr, dpr);
+  g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = r * 0.6 * dpr; g.shadowOffsetX = 1000 * dpr;
+  g.fillStyle = '#000'; g.beginPath(); g.arc(size / 2 - 1000, size / 2, r, 0, 7); g.fill();
+  return (shadowCache = { c, r, dpr, pad });
+}
 function shade(c) {
   const n = parseInt(c.slice(1), 16), r = (n >> 16) * 0.55, g = ((n >> 8) & 255) * 0.55, b = (n & 255) * 0.55;
   return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
 }
+// 당구대는 크기·옵션이 바뀔 때만 새로 그리고, 평소에는 그려 둔 그림을 복사
+let tblCache = null, tblKey = '';
 function drawTable() {
+  const dpr = window.devicePixelRatio || 1;
+  const key = [cv.width, cv.height, dpr, S.vertical, S.sys, S.T.L, S.T.W, S.s, S.p.R].join();
+  if (key !== tblKey) {
+    const oc = tblCache || (tblCache = document.createElement('canvas'));
+    oc.width = cv.width; oc.height = cv.height;
+    const main = ctx; ctx = oc.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    try { drawTableRaw(); } finally { ctx = main; }
+    tblKey = key;
+  }
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height); ctx.drawImage(tblCache, 0, 0);
+  ctx.restore();
+}
+function drawTableRaw() {
   const w = S.cw, h = S.ch, rp = S.rail * S.s;
   ctx.clearRect(0, 0, w, h);
   const wood = ctx.createLinearGradient(0, 0, w, h); wood.addColorStop(0, '#4a2d1a'); wood.addColorStop(1, '#2e1b0f');
