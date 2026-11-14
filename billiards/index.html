@@ -203,6 +203,11 @@ canvas#tbl{border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 kbd{border-radius:8px}
 #keyToast{background:rgba(20,25,34,.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:var(--soft);padding:8px 16px;transition:opacity .3s var(--ease)}
 #practiceOpts{animation:softIn .25s var(--ease)}
+/* 인트로 아래 가운데: 연하게 깜빡이는 건너뛰기 안내 */
+#introHint{position:absolute;left:0;right:0;bottom:8%;text-align:center;pointer-events:none;padding:0 16px;
+  font-size:clamp(13px,1.8vw,16px);font-weight:600;letter-spacing:1px;color:#e8eaed;text-shadow:0 2px 8px rgba(0,0,0,.8);
+  opacity:.55;animation:introBlink 1.8s ease-in-out infinite}
+@keyframes introBlink{0%,100%{opacity:.15}50%{opacity:.6}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -377,6 +382,7 @@ kbd{border-radius:8px}
 <div id="intro">
   <canvas id="introCv"></canvas>
   <div class="ilayer" id="introLogo">공구 당구</div>
+  <div id="introHint">Enter 키를 눌러 건너뛰세요</div>
 </div>
 <div id="keyToast"></div>
 <div id="keyModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:60;padding:16px">
@@ -1837,7 +1843,7 @@ $('endMenu').onclick = openMenu;
 const INTRO_SHOT = { pos: [[0.8526695051941413, 0.3110630244021597], [2.4848238437831514, 0.6326931495977068], [1.1937827614107088, 0.5732064805660427]],
   phi: 0.7788717783687537, V: 4.35150607272587, a: 0.10502572148341027, b: 0.001838188270031571 };
 const INTRO = { on: false, raf: 0, t0: 0, sim: null, scoreT: 0, contact: null, leaving: false };
-const T_ORBIT = 3.5, T_HIT = 5.0, PLAY = 0.85, SLOW = 0.13, RAMP = 1.1, PRE = 0.07, T_DIVE = 2.0, T_FILL = 0.45;
+const T_ORBIT = 3.5, T_HIT = 5.0, PLAY = 0.85, SLOW = 0.3, RAMP = 1.1, PRE = 0.07;
 const v3 = { sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
   cr: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], n: a => { const m = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / m, a[1] / m, a[2] / m]; },
   lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t] };
@@ -1854,11 +1860,13 @@ function introPrep() {
   INTRO.sim = sim; INTRO.scoreT = scoreT;
   INTRO.contact = ev ? [(ev.x + ev.x2) / 2, (ev.y + ev.y2) / 2, R] : [1.42, 0.71, R];
 }
-// tS: 감속 시작, tI: 흰공-노란공 충돌, tZs: 줌 시작, tZ: 노란 공 안으로
+// tS: 감속 시작, tI: 흰공-노란공 충돌, tZs: 천장 시점으로 올라가기 시작, tF: 인트로 끝 (천장 시점 그대로 메뉴로)
+const CAM_UP = 2.2, T_HOLD = 1.3;
 function introTL() {
   const tS = T_HIT + Math.max(0, INTRO.scoreT - PRE - RAMP * (PLAY + SLOW) / 2) / PLAY;
   const tI = tS + RAMP + PRE / SLOW;
-  return { tS, tI, tZs: tS - 0.8, tZ: tI + T_DIVE, tF: tI + T_DIVE + T_FILL };
+  const tZs = tS - 1.0;
+  return { tS, tI, tZs, tF: Math.max(tI, tZs + CAM_UP) + T_HOLD };
 }
 // 재생 속도가 PLAY → SLOW 로 부드럽게 바뀜 (속도를 적분한 공의 시간)
 function shotAt(t) {
@@ -1890,29 +1898,25 @@ function introCam(t, w, h, balls) {
   if (t < T_ORBIT) { const e = ease((t - 0.9) / (T_ORBIT - 0.9)); yaw = yawE + (1 - e) * 2.4; dist = distE + (1 - e) * 1.1; hh = hE + (1 - e) * 0.9; }
   else if (t > T_HIT) { const e = ease((t - T_HIT) / 8); yaw = yawE + e * 0.22; hh = hE + e * 0.45; dist = distE + e * 0.25; }
   let pos = [c0[0] + Math.cos(yaw) * dist, c0[1] + Math.sin(yaw) * dist, hh];
-  let tgt = [c0[0], c0[1], 0];
-  const { tI, tZs, tZ } = introTL();
+  const tgt = [c0[0], c0[1], 0], F = Math.min(w * 0.62, h * 1.0);
+  let cy = h * 0.52;
+  const { tZs } = introTL();
   if (t > tZs) {
-    // 하나로 이어진 줌: 맞는 지점으로 다가가며 슬로우 → 멈추지 않고 노란 공(왼쪽)·흰 공(오른쪽) 클로즈업
-    const R = S.p.R, wb = balls[0], y = balls[1], yel = [y[0], y[1], R], wht = [wb[0], wb[1], R];
-    const focusA = v3.lerp(tgt, INTRO.contact, ease((t - tZs) / (tI - tZs + 0.15)));
-    const off = v3.sub(pos, focusA), base = Math.hypot(off[0], off[1], off[2]);
-    const dRef = Math.max(0.5, Math.hypot(...v3.sub(INTRO.contact, pos)));
-    const dA = base * Math.exp(smoothKeys(t, [[tZs, 0], [tI, Math.log(0.3 / dRef)], [tZ, Math.log(0.2 / dRef)]]));
-    const yawA = Math.atan2(off[1], off[0]), pitA = Math.asin(Math.max(-1, Math.min(1, off[2] / base)));
-    // 마지막 구도: 두 공을 잇는 선에 수직으로 바라봐서 노란 공은 왼쪽, 흰 공은 오른쪽
-    const mid = v3.lerp(yel, wht, 0.5), lw = v3.sub(wht, yel), sep = Math.max(2 * R, Math.hypot(lw[0], lw[1]));
-    const yawB = Math.atan2(-lw[0], lw[1]), pitB = 0.3, Fz = Math.min(w * 0.62, h);
-    const dB = Math.max(0.07, Fz * (sep / 2 + R * 1.2) / (w * 0.4));
-    const m = ease((t - tI + 0.2) / (T_DIVE * 0.85));
-    let dy = yawB - yawA; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
-    const yaw2 = yawA + dy * m, pit = pitA + (pitB - pitA) * m, dd = Math.exp(Math.log(dA) + (Math.log(dB) - Math.log(dA)) * m);
-    const focus = v3.lerp(focusA, mid, m);
-    pos = [focus[0] + dd * Math.cos(pit) * Math.cos(yaw2), focus[1] + dd * Math.cos(pit) * Math.sin(yaw2), focus[2] + dd * Math.sin(pit)];
-    tgt = focus;
+    // 확대 없이: 사람 눈높이 시점 → 테이블 한가운데 위(천장) 시점으로 천천히 올라감
+    // 마지막 천장 시점은 게임 화면과 같은 방향 (가로 화면이면 장쿠션이 가로, 세로 화면이면 세로)
+    const fwd = S.vertical ? [1, 0] : [0, 1];
+    const pitB = 89.5 * Math.PI / 180, yawB = Math.atan2(-fwd[1], -fwd[0]);
+    const spanX = (S.vertical ? W : L) + 0.4, spanY = (S.vertical ? L : W) + 0.4;
+    const dB = Math.max(F * spanX / (w * 0.92), F * spanY / (h * 0.86));
+    const dA = Math.hypot(dist, hh), pitA = Math.atan2(hh, dist);
+    const m = ease((t - tZs) / CAM_UP);
+    let dy = yawB - yaw; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
+    const yaw2 = yaw + dy * m, pit = pitA + (pitB - pitA) * m, dd = Math.exp(Math.log(dA) + (Math.log(dB) - Math.log(dA)) * m);
+    pos = [tgt[0] + dd * Math.cos(pit) * Math.cos(yaw2), tgt[1] + dd * Math.cos(pit) * Math.sin(yaw2), dd * Math.sin(pit)];
+    cy = h * (0.52 - 0.02 * m);
   }
   const f = v3.n(v3.sub(tgt, pos)), r = v3.n(v3.cr(f, [0, 0, 1])), u = v3.cr(r, f);
-  return { pos, f, r, u, F: Math.min(w * 0.62, h * 1.0), cx: w / 2, cy: h * 0.52 };
+  return { pos, f, r, u, F, cx: w / 2, cy };
 }
 function introDraw(g, w, h, t) {
   const L = 2.84, W = 1.42, R = S.p.R, NEAR = 0.012;
@@ -1975,23 +1979,31 @@ function introDraw(g, w, h, t) {
     gr.addColorStop(0, '#fff'); gr.addColorStop(0.45, cols[i]); gr.addColorStop(1, shade(cols[i]));
     g.fillStyle = gr; g.beginPath(); g.arc(s[0], s[1], r, 0, 7); g.fill();
   }
-  // 큐대 (조준 → 예비 스트로크 2번 → 타격)
-  if (t > T_ORBIT - 0.6 && t < T_HIT + 0.35) {
-    const cb = balls[0], d = [Math.cos(INTRO_SHOT.phi), Math.sin(INTRO_SHOT.phi)];
+  // 큐대 (조준 → 예비 스트로크 2번 → 타격 → 팔로스루 → 투명해지지 않고 그대로 뒤로 빠져 화면 밖으로)
+  // 친 뒤에는 흰 공을 따라가지 않도록, 처음 흰 공 자리를 기준으로 그림
+  const T_FOLLOW = 0.35, T_PULL = 1.1;
+  if (t > T_ORBIT - 0.6 && t < T_HIT + T_FOLLOW + T_PULL * 2.5) {
+    const cb = INTRO_SHOT.pos[0], d = [Math.cos(INTRO_SHOT.phi), Math.sin(INTRO_SHOT.phi)];
     let back;
     if (t < T_HIT - 0.25) { const u = (t - T_ORBIT) / (T_HIT - 0.25 - T_ORBIT); back = 0.03 + 0.09 * (0.5 - 0.5 * Math.cos(Math.max(0, u) * Math.PI * 3)); }
     else if (t < T_HIT) back = 0.12 * (T_HIT - t) / 0.25;
-    else back = -0.03;
-    const al = t < T_ORBIT - 0.3 ? ease((t - T_ORBIT + 0.6) / 0.3) : t > T_HIT ? 1 - (t - T_HIT) / 0.35 : 1;
+    else if (t < T_HIT + T_FOLLOW) back = -0.04 * ease((t - T_HIT) / 0.12);        // 공을 밀고 나가는 팔로스루, 잠깐 멈춤
+    else { const k = (t - T_HIT - T_FOLLOW) / T_PULL; back = -0.04 + 1.6 * k * k; } // 점점 빨라지며 뒤로 쭉
+    const al = t < T_ORBIT - 0.3 ? ease((t - T_ORBIT + 0.6) / 0.3) : 1;           // 친 뒤에는 연해지지 않음
     const el = 7 * Math.PI / 180, len = 1.35, o = R + 0.006 + back;
-    const s1 = P(cb[0] - d[0] * o, cb[1] - d[1] * o, R + o * Math.sin(el));
-    const s2 = P(cb[0] - d[0] * (o + len * Math.cos(el)), cb[1] - d[1] * (o + len * Math.cos(el)), R + (o + len) * Math.sin(el));
-    if (s1 && s2) { g.save(); g.globalAlpha = fadeIn * Math.max(0, al); drawCueStick(g, curCue(), [s1[0], s1[1]], [s2[0], s2[1]], cam.F * 0.012 / s1[2], cam.F * 0.03 / s2[2]); g.restore(); }
+    const tip = [cb[0] - d[0] * o, cb[1] - d[1] * o, R + o * Math.sin(el)];
+    const butt = [cb[0] - d[0] * (o + len * Math.cos(el)), cb[1] - d[1] * (o + len * Math.cos(el)), R + (o + len) * Math.sin(el)];
+    // 큐 끝이 카메라 뒤로 넘어가도 끊기지 않게 화면 앞쪽까지만 잘라서 그림
+    const ct = toC(...tip); let cbt = toC(...butt);
+    if (ct[2] >= NEAR * 4) {
+      if (cbt[2] < NEAR * 4) { const kk = (NEAR * 4 - ct[2]) / (cbt[2] - ct[2]); cbt = [ct[0] + (cbt[0] - ct[0]) * kk, ct[1] + (cbt[1] - ct[1]) * kk, NEAR * 4]; }
+      const s1 = scr(ct), s2 = scr(cbt), wb = 0.012 + 0.018 * Math.min(1, Math.hypot(...v3.sub(cbt, ct)) / len);
+      if (s1[0] > -w && s1[0] < 2 * w && s1[1] > -h && s1[1] < 2 * h) {
+        g.save(); g.globalAlpha = fadeIn * Math.max(0, al); drawCueStick(g, curCue(), [s1[0], s1[1]], [s2[0], s2[1]], cam.F * 0.012 / s1[2], Math.min(cam.F * wb / s2[2], w * 0.08)); g.restore();
+      }
+    }
   }
   g.globalAlpha = 1;
-  // 노란 공 안으로 — 화면을 노란빛으로 채움
-  const { tZ } = introTL();
-  if (t > tZ - 0.5) { g.fillStyle = 'rgba(243,198,35,' + Math.min(1, (t - tZ + 0.5) / (0.5 + T_FILL)) + ')'; g.fillRect(0, 0, w, h); }
 }
 function introFrame(now) {
   if (!INTRO.on) return;
@@ -2010,13 +2022,13 @@ function playIntro() {
   const el = $('intro'); el.style.transition = 'none'; el.style.opacity = 1; el.style.display = 'block';
   cancelAnimationFrame(INTRO.raf); INTRO.raf = requestAnimationFrame(introFrame);
 }
-// 노란빛이 걷히면서 메뉴(게임 시작 화면)가 나타남
+// 천장 시점에서 인트로가 서서히 사라지며 메뉴(게임 시작 화면)가 나타남
 function endIntro() {
   if (!INTRO.on) return;
   INTRO.on = false; cancelAnimationFrame(INTRO.raf);
   openMenu();
-  const el = $('intro'), cv2 = $('introCv'), g = cv2.getContext('2d');
-  g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#f3c623'; g.fillRect(0, 0, cv2.width, cv2.height);
+  // 천장 시점 화면 그대로 부드럽게 사라지며 게임 화면(위에서 본 당구대)으로 넘어감
+  const el = $('intro');
   $('introLogo').style.opacity = 0;
   el.style.transition = 'opacity .7s ease'; requestAnimationFrame(() => { el.style.opacity = 0; });
   setTimeout(() => { if (!INTRO.on) el.style.display = 'none'; }, 750);
