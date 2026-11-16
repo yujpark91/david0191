@@ -157,6 +157,17 @@ body:not(.ingame) .game-only{display:none !important}
 .namerow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .namerow label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute);font-weight:600}
 .namerow input{min-width:0;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:14px}
+/* 대전 스코어보드: 흰 공 점수 | 목표 | 노란 공 점수 */
+.sb{display:inline-flex;align-items:center;gap:14px}
+.sbp{display:inline-flex;align-items:center;gap:6px;opacity:.6;font-weight:600}
+.sbp.on{opacity:1;color:var(--accent);font-weight:800}
+.sbp .arrow{visibility:hidden;font-size:11px}
+.sbp.on .arrow{visibility:visible}
+.sbp small{font-size:11px;color:var(--mute);font-weight:600}
+.sbt{padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:12px;color:var(--mute);font-weight:700;white-space:nowrap}
+.roll{position:relative;display:inline-block;height:1.3em;min-width:2.2ch;overflow:hidden;vertical-align:middle;font-size:18px;font-weight:900;color:var(--text)}
+.roll .rv{position:absolute;left:0;right:0;top:0;line-height:1.3em;text-align:center}
+#scorePop{position:absolute;left:50%;top:20%;transform:translateX(-50%);pointer-events:none;font-size:30px;font-weight:900;opacity:0;white-space:nowrap;text-shadow:0 2px 6px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);z-index:5}
 #gameHud .pl{opacity:.6;font-weight:600}
 #gameHud .pl.on{opacity:1;color:var(--accent);font-weight:800}
 #gameHud .pl b{font-size:15px}
@@ -245,7 +256,7 @@ kbd{border-radius:8px}
 </div>
 
 <div id="top">
-  <div id="wrap"><canvas id="tbl"></canvas><div id="busy"><span id="busyTxt">계산 중…</span></div></div>
+  <div id="wrap"><canvas id="tbl"></canvas><div id="busy"><span id="busyTxt">계산 중…</span></div><div id="scorePop"></div></div>
   <aside id="side">
     <div class="sc"><canvas id="spin" width="240" height="240"></canvas>
     <div class="spinread" id="spinRead"></div>
@@ -1338,9 +1349,10 @@ function draw() {
   if (S.playing) {
     const res = S.playing.res, fr = res.frames;
     const k = Math.max(0, Math.min(fr.length - 1, Math.floor(S.playing.t / (1 / 120))));
-    flashCushions(res, fr[k].t);
-    if (S.trail) { drawPaths(res, k + 1, 0.8, false); drawMarkers(res, fr[k].t); }
-    else if (S.game) drawMarkers(res, fr[k].t);
+    const online = S.game && S.game.online;   // 온라인 대전: 쿠션 빛남·번호 표시 없음
+    if (!online) flashCushions(res, fr[k].t);
+    if (S.trail) { drawPaths(res, k + 1, 0.8, false); if (!online) drawMarkers(res, fr[k].t); }
+    else if (S.game && !online) drawMarkers(res, fr[k].t);
     fr[k].b.forEach((b, i) => drawBall(b[0], b[1], [b[2], b[3], b[4], b[5]], cols[i], i === S.cue));
     return;
   }
@@ -1373,7 +1385,8 @@ function shoot(byAi) {
   if (S.game && S.game.online) netSend({ t: 'shot', balls: packBalls(), cue: S.cue, phi: S.phi, a: S.a, b: S.b, V: S.V, elev: S.elev });
   const res = runShot(true);
   S.undo = C.cloneBalls(S.balls);
-  S.playing = { res, t: 0, last: performance.now(), speed: +$('speed').value };
+  clearHold();
+  S.playing = { res, t: 0, last: performance.now(), speed: +$('speed').value, mark: scoreMoment(res) };
   $('res').textContent = '…'; $('res').className = 'res'; $('seq').textContent = '';
   requestAnimationFrame(tick);
 }
@@ -1381,6 +1394,7 @@ function tick(now) {
   const P = S.playing; if (!P) return;
   const dt = Math.max(0, Math.min(0.05, (now - P.last) / 1000)); P.last = Math.max(P.last, now);
   P.t += dt * P.speed;
+  if (P.mark && P.mark.t !== 'end' && P.t >= P.mark.t) fireMoment(P.mark);
   const end = P.res.frames[P.res.frames.length - 1].t;
   draw();
   if (P.t >= end) { finish(); return; }
@@ -1389,6 +1403,7 @@ function tick(now) {
 function finish() {
   const res = S.playing.res;
   const isBreak = S.playing.isBreak, remote = S.playing.remote;
+  if (S.playing.mark) fireMoment(S.playing.mark);   // 공이 모두 멈춘 순간
   S.playing = null;
   const fin = res.frames[res.frames.length - 1].b;
   S.balls.forEach((b, i) => { b.x = fin[i][0]; b.y = fin[i][1]; b.q = [fin[i][2], fin[i][3], fin[i][4], fin[i][5]]; });
@@ -1861,12 +1876,8 @@ function updHud() {
   const g = S.game; if (!g) return;
   $('hudMode').textContent = g.online ? '🌐 온라인 · ' + GAME_CFG[g.table].name : g.ai ? '🤖 AI 대전 · ' + GAME_CFG[g.table].name :
     (g.multi ? '👥 ' : '') + GAME_CFG[g.table].name + ' · ' + GAME_CFG[g.table].levels[g.level].nm;
-  if (g.multi) {
-    savePl(g);
-    const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    $('hudScore').innerHTML = g.pl.map((p, i) => '<span class="pl' + (i === g.turn ? ' on' : '') + '">' + (i === g.turn ? '▶ ' : '') + (p.ball === 0 ? '⚪' : '🟡') + ' ' + esc(p.name) + ' <b>' + p.score + '</b>' +
-      (g.threeNeed ? ' <small>(쓰리쿠 ' + p.three + ')</small>' : '') + '</span>').join(' : ') + ' <span class="k">/ ' + g.target + '점</span>';
-  } else $('hudScore').textContent = g.score + ' / ' + g.target;
+  if (g.multi) { savePl(g); paintBoard(g); }
+  else { $('hudScore')._g = null; $('hudScore').textContent = g.score + ' / ' + g.target; }
   const w = $('hudThreeWrap');
   w.style.display = g.threeNeed > 0 ? '' : 'none';
   w.classList.toggle('on', g.phase === 'three');
@@ -1883,8 +1894,91 @@ function updHud() {
   else if (g.multi) rule = '<b style="color:var(--accent)">' + plName(g.turn).replace(/</g, '&lt;') + ' 차례 · 내 공은 ' + ballName(S.cue) + '</b> — 득점하면 계속, 못 치면 상대 차례. ' + rule;
   if (g.multi && g.endPhase === 'last') rule = '<b style="color:var(--accent)">🏁 마지막 기회</b> — ' + plName(0).replace(/</g, '&lt;') + '이(가) 먼저 목표를 채웠어요. ' + plName(1).replace(/</g, '&lt;') + '도 이번 이닝에 채우면 동점 → 연장전, 못 채우면 ' + plName(0).replace(/</g, '&lt;') + ' 승리. ' + rule;
   else if (g.multi && g.endPhase === 'tb') rule = '<b style="color:var(--accent)">⚖️ 연장 ' + g.tbRound + '이닝</b> — 한 이닝씩 쳐서 <b>둘 중 한 명만 득점하면 승리</b>, 둘 다 득점하거나 둘 다 못 하면 다음 이닝. (이번 이닝 ' + plName(0).replace(/</g, '&lt;') + ': ' + (g.turn === 1 ? (g.tb[0] ? '득점 ⭕' : '실패 ❌') : '치는 중') + ') ' + rule;
-  $('ruleBox').innerHTML = rule + ' <span style="opacity:.8">· 수구가 쿠션에 닿을 때마다 쿠션이 노랗게 빛나고 번호가 붙어요.</span>' + (g.ai ? '<br>' + aiGapHtml(g) : '');
+  $('ruleBox').innerHTML = rule + (g.online ? '' : ' <span style="opacity:.8">· 수구가 쿠션에 닿을 때마다 쿠션이 노랗게 빛나고 번호가 붙어요.</span>') +(g.ai ? '<br>' + aiGapHtml(g) : '');
 }
+// ---- 대전 스코어보드: ⚪ 흰 공 점수 (왼쪽) | 목표 (가운데) | 노란 공 점수 🟡 (오른쪽) ----
+function paintBoard(g) {
+  const box = $('hudScore');
+  if (box._g !== g) {
+    box._g = g; box.innerHTML = '';
+    const sb = document.createElement('span'); sb.className = 'sb';
+    box._side = []; box._roll = []; box._name = []; box._three = []; box._shown = [];
+    const side = i => {
+      const s = document.createElement('span'); s.className = 'sbp';
+      const ar = document.createElement('span'); ar.className = 'arrow'; ar.textContent = i === 0 ? '▶' : '◀';
+      const nm = document.createElement('span');
+      const th = document.createElement('small');
+      const roll = document.createElement('span'); roll.className = 'roll';
+      const rv = document.createElement('span'); rv.className = 'rv'; rv.textContent = g.pl[i].score; roll.appendChild(rv);
+      if (i === 0) s.append(ar, nm, th, roll); else s.append(roll, th, nm, ar);
+      box._side[i] = s; box._roll[i] = roll; box._name[i] = nm; box._three[i] = th; box._shown[i] = g.pl[i].score;
+      return s;
+    };
+    const mid = document.createElement('span'); mid.className = 'sbt'; box._mid = mid;
+    sb.append(side(0), mid, side(1)); box.appendChild(sb);
+  }
+  g.pl.forEach((p, i) => {
+    box._side[i].classList.toggle('on', i === g.turn);
+    box._name[i].textContent = i === 0 ? '⚪ ' + p.name : p.name + ' 🟡';
+    box._three[i].textContent = g.threeNeed ? '(쓰리쿠 ' + p.three + ')' : '';
+    const hold = box._hold && box._hold[i];
+    if (hold !== undefined && hold !== null && p.score === hold) return;   // 아직 실제 점수 반영 전
+    if (box._hold) box._hold[i] = null;
+    setRoll(i, p.score);
+  });
+  box._mid.textContent = '목표 ' + g.target + '점' + (g.threeNeed ? ' + 쓰리쿠 ' + g.threeNeed : '');
+}
+// 점수 숫자 굴리기: 오르면 새 숫자가 아래에서 올라와 옛 숫자를 위로 밀어냄, 내리면 반대
+function setRoll(i, v) {
+  const box = $('hudScore'); if (!box._roll || box._shown[i] === v) return;
+  const roll = box._roll[i], up = v > box._shown[i], d = up ? 1 : -1;
+  box._shown[i] = v;
+  while (roll.children.length > 1) roll.firstChild.remove();
+  const old = roll.firstChild, nw = document.createElement('span');
+  nw.className = 'rv'; nw.textContent = v; roll.appendChild(nw);
+  const opt = { duration: 480, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' };
+  if (old && old.animate) {
+    old.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(' + (-140 * d) + '%)' }], opt).onfinish = () => old.remove();
+    nw.animate([{ transform: 'translateY(' + (140 * d) + '%)' }, { transform: 'translateY(0)' }], opt);
+  } else if (old) old.remove();
+}
+// 온라인 대전: 득점·감점 글자를 1초 띄우기 (흰 공=흰색, 노란 공=노란색, 감점=빨간색)
+function popScore(text, color) {
+  const el = $('scorePop');
+  el.textContent = text; el.style.color = color;
+  if (el.animate) el.animate([{ opacity: 0, transform: 'translate(-50%, 8px)' }, { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.15 },
+    { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.8 }, { opacity: 0, transform: 'translate(-50%, -6px)' }], { duration: 1000, easing: 'ease-out' });
+}
+// 점수가 확정되는 순간 계산 (온라인 대전)
+// 3구·쓰리쿠: 득점이 인정되는 순간(두 번째 공에 맞는 순간) / 4구 득점·헛맞음: 공이 모두 멈췄을 때 / 4구 상대 공 접촉: 맞는 순간
+function scoreMoment(res) {
+  const g = S.game; if (!g || !g.online || !g.pl) return null;
+  const ev = res.ev, who = g.turn, color = g.pl[who].ball === 0 ? '#ffffff' : '#f5c542', cue = S.cue;
+  const hitTime = n => { const seen = []; for (const e of res.events) if (e.k === 'b' && (e.i === cue || e.j === cue)) { const o = e.i === cue ? e.j : e.i; if (!seen.includes(o)) { seen.push(o); if (seen.length === n) return e.t; } } return 'end'; };
+  if (g.table === '3c') { if (!ev.ok) return null; const bank = ev.seq.length > 0 && ev.seq[0].t === 'c'; return { t: hitTime(2), who, delta: bank ? 2 : 1, color }; }
+  if (g.phase === 'three') return ev.ok ? { t: hitTime(2), who, three: true, color } : null;
+  if (ev.ok) return { t: 'end', who, delta: 1, color };
+  if (g.score <= 0) return null;   // 0점이면 감점 없음
+  if (ev.foul) {
+    const opp = cue === 0 ? 1 : 0, e = res.events.find(e => e.k === 'b' && ((e.i === cue && e.j === opp) || (e.j === cue && e.i === opp)));
+    return { t: e ? e.t : 'end', who, delta: -1, color: '#ff4d4d' };
+  }
+  if (ev.hit.length === 0) return { t: 'end', who, delta: -1, color: '#ff4d4d' };
+  return null;
+}
+function fireMoment(m) {
+  if (!m || m.fired) return; m.fired = true;
+  const box = $('hudScore');
+  if (m.three) { popScore('쓰리쿠 성공!', m.color); return; }
+  popScore(m.delta > 0 ? m.delta + '점!' : '−1점', m.color);
+  if (box._shown) {
+    // 실제 점수 계산(샷이 끝난 뒤)이 들어올 때까지 미리 올린 숫자를 유지
+    box._hold = box._hold || [];
+    box._hold[m.who] = box._shown[m.who];
+    setRoll(m.who, Math.max(0, box._shown[m.who] + m.delta));
+  }
+}
+function clearHold() { const box = $('hudScore'); box._hold = []; }
 function gameAfterShot(res) {
   const g = S.game; g.shots++;
   const ev = res.ev; let note;
@@ -2192,7 +2286,8 @@ function netHandle(m) {
     if (g.over) return;
     unpackBalls(m.balls); S.cue = m.cue === 1 ? 1 : 0; applyAim(m); S.lastRes = null; drawSpin(); updReads();
     const res = runShot(true);
-    S.playing = { res, t: 0, last: performance.now(), speed: +$('speed').value, remote: true };
+    clearHold();
+    S.playing = { res, t: 0, last: performance.now(), speed: +$('speed').value, remote: true, mark: scoreMoment(res) };
     setStatus('…', plName(g.turn) + ' 샷'); requestAnimationFrame(tick);
   }
   else if (m.t === 'break') { if (g.table === '4b') doBreak(m.msg ? String(m.msg) : undefined, numOr(m.seed, 1) >>> 0); }
