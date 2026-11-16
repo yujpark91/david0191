@@ -137,6 +137,19 @@ body:not(.ingame) .game-only{display:none !important}
 .lvgrid .rec{color:var(--good)}
 .playpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .playpick .mbig{padding:18px 14px}
+.playpick .wide{grid-column:1/-1}
+#aiView input.txt,#onlineView input.txt{width:100%;min-width:0;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:14px}
+#onlineView .joinrow{display:flex;gap:6px}
+#onlineView .joinrow input{flex:1;text-transform:uppercase;letter-spacing:2px;font-weight:800}
+.roomcode{margin-top:12px;padding:12px;border-radius:12px;background:#1b2a3d;border:1px solid #2f5f92;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}
+.roomcode b{font-size:26px;letter-spacing:4px;color:var(--accent)}
+.people{margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.people .wait{color:var(--mute)}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:13.5px;font-weight:700}
+.setrow .stepper input{width:64px}
+#onSettings.locked button,#onSettings.locked input{pointer-events:none;opacity:.6}
+#onMsg{margin-top:8px;min-height:1em}
+#onMsg.bad{color:var(--bad)}
 .practiceCorner{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-top:10px}
 .practiceCorner #practiceOpts{width:100%;max-width:320px}
 #practiceBtn.on{border-color:var(--accent);color:var(--accent)}
@@ -319,6 +332,8 @@ kbd{border-radius:8px}
       <div class="playpick">
         <button class="mbig" data-play="solo"><b>👤 개인 플레이</b><small>혼자서 · 제한 시간 5분</small></button>
         <button class="mbig" data-play="multi"><b>👥 멀티 플레이</b><small>2명이 번갈아 · 제한 시간 20분</small><small>목표 점수 2배</small></button>
+        <button class="mbig" data-play="online"><b>🌐 온라인 대전</b><small>친구와 방 코드로 연결</small><small>방장이 목표 점수를 정해요</small></button>
+        <button class="mbig" data-play="ai"><b>🤖 AI 대전</b><small>수천 가지 샷을 계산하는 AI</small><small>이길 수 있을까요?</small></button>
       </div>
       <div class="practiceCorner">
         <button class="sm" id="practiceBtn">🎯 연습 모드 ▾</button>
@@ -327,6 +342,46 @@ kbd{border-radius:8px}
           <button data-go="p4b">4구 연습<small>배치 · 자동 조준 · 예상 경로</small></button>
         </div>
       </div>
+    </div>
+    <div id="onlineView" style="display:none">
+      <div class="playbar"><span>🌐 온라인 대전</span><button class="sm" id="onBack">← 방식 바꾸기</button></div>
+      <div id="onLobby">
+        <h3>내 이름</h3>
+        <input class="txt" id="onName" maxlength="10" placeholder="플레이어">
+        <h3>방 만들기 — 내가 방장 (⚪ 흰 공)</h3>
+        <button class="mbig" id="onCreate" style="width:100%"><b>🏠 방 만들기</b><small>방 코드가 나오면 친구에게 알려 주세요</small></button>
+        <h3>방 참가 — 친구 방에 들어가기 (🟡 노란 공)</h3>
+        <div class="joinrow"><input class="txt" id="onCode" maxlength="5" placeholder="방 코드 5자리" autocomplete="off"><button class="primary" id="onJoin">참가</button></div>
+      </div>
+      <div id="onRoom" style="display:none">
+        <div class="roomcode"><span>방 코드</span><b id="onCodeShow"></b><button class="sm" id="onCopy">복사</button></div>
+        <div class="people" id="onPeople"></div>
+        <div id="onSettings">
+          <h3 id="onSetTitle">게임 설정</h3>
+          <div class="seg" id="onTable"><button data-t="3c">3구 (3쿠션)<small>뱅크샷 2점</small></button><button data-t="4b">4구<small>상대 공 · 헛맞음 −1점</small></button></div>
+          <div class="setrow"><span>목표 점수 <small style="color:var(--mute)">(1~30점)</small></span>
+            <div class="stepper"><button data-k="target" data-d="-1">−</button><input type="number" id="onTarget" data-k="target" min="1" max="30" value="10"><button data-k="target" data-d="1">+</button></div></div>
+          <div class="setrow" id="onThreeRow"><span>마무리 쓰리쿠 <small style="color:var(--mute)">(0~2개)</small></span>
+            <div class="stepper"><button data-k="three" data-d="-1">−</button><input type="number" id="onThree" data-k="three" min="0" max="2" value="0"><button data-k="three" data-d="1">+</button></div></div>
+          <div class="note" style="margin-top:6px">제한 시간 20분 · 득점하면 계속 치고, 못 치면 상대 차례</div>
+        </div>
+        <div class="row" style="margin-top:14px"><button class="primary" id="onStart" style="flex:1">게임 시작</button><button id="onLeave">방 나가기</button></div>
+      </div>
+      <div class="note" id="onMsg"></div>
+    </div>
+    <div id="aiView" style="display:none">
+      <div class="playbar"><span>🤖 AI 대전</span><button class="sm" id="aiBack">← 방식 바꾸기</button></div>
+      <div class="note" style="margin-top:10px;line-height:1.55">AI는 한 번 치기 전에 <b>수천 가지 샷</b>(방향 × 세기 × 당점)을 물리 계산으로 미리 쳐 봐요. 그중 조준이 조금 틀려도 들어가는 <b>가장 확실한 샷</b>을 골라 정확하게 쳐요. 사실상 이기기 어려운 상대예요. 도전해 보세요!</div>
+      <h3>내 이름</h3>
+      <input class="txt" id="aiName" maxlength="10" placeholder="나">
+      <h3>게임</h3>
+      <div class="seg" id="aiTable"><button data-t="3c">3구 (3쿠션)<small>뱅크샷 2점</small></button><button data-t="4b">4구<small>상대 공 · 헛맞음 −1점</small></button></div>
+      <div class="setrow"><span>목표 점수 <small style="color:var(--mute)">(1~30점)</small></span>
+        <div class="stepper"><button data-k="target" data-d="-1">−</button><input type="number" id="aiTarget" data-k="target" min="1" max="30" value="10"><button data-k="target" data-d="1">+</button></div></div>
+      <div class="setrow" id="aiThreeRow"><span>마무리 쓰리쿠 <small style="color:var(--mute)">(0~2개)</small></span>
+        <div class="stepper"><button data-k="three" data-d="-1">−</button><input type="number" id="aiThree" data-k="three" min="0" max="2" value="0"><button data-k="three" data-d="1">+</button></div></div>
+      <div class="note" style="margin-top:6px">제한 시간 20분 · 내가 먼저 쳐요 (⚪ 흰 공) · AI는 🟡 노란 공</div>
+      <button class="primary" id="aiStart" style="width:100%;margin-top:14px">AI와 대결 시작</button>
     </div>
     <div id="gameView">
     <div class="playbar"><span id="playLabel"></span><button class="sm" id="playChange">← 방식 바꾸기</button></div>
@@ -359,7 +414,9 @@ kbd{border-radius:8px}
         <p><b>4구 난이도</b> — 쉬움 5점 · 보통 7점 + 쓰리쿠 1개 · 어려움 10점 + 쓰리쿠 2개, 모두 <b>5분</b> 안에. 목표 점수를 채우면 <b>쓰리쿠</b>로 마무리해요. 아무 공 2개를 맞히되 두 번째 공 전에 쿠션 3번 이상이고, 이때는 노란 공을 맞혀도 돼요.</p>
         <p><b>뱅크샷 (3구)</b> — 수구가 첫 번째 공보다 <b>쿠션을 먼저</b> 맞고 득점하면 <b>2점</b>이에요.</p>
         <p>공이 수구에 붙으면 3구는 초구 배치로, 4구는 다시 깨서 이어가요.</p>
-        <p><b>멀티 플레이</b> — 2명이 번갈아 쳐요. 1번은 흰 공, 2번은 노란 공이 내 공(수구)이에요. 제한 시간 <b>20분</b>, 목표 점수는 개인 플레이의 <b>2배</b>(쓰리쿠 개수는 그대로)예요. 대회 규칙처럼 <b>득점하면 계속 치고</b>, 못 치거나 감점(−1점)이 되면 <b>상대 차례</b>로 넘어가요. 4구에서는 상대의 공을 맞히면 감점이에요. 목표를 먼저 채운 사람이 이기고, 시간이 끝나면 점수가 높은 사람이 이겨요.</p>
+        <p><b>멀티 플레이</b> — 2명이 번갈아 쳐요. 1번은 흰 공, 2번은 노란 공이 내 공(수구)이에요. 제한 시간 <b>20분</b>, 목표 점수는 개인 플레이의 <b>2배</b>(쓰리쿠 개수는 그대로)예요. 대회 규칙처럼 <b>득점하면 계속 치고</b>, 못 치거나 감점(−1점)이 되면 <b>상대 차례</b>로 넘어가요. 4구에서는 상대의 공을 맞히면 감점이에요. 시간이 끝나면 점수가 높은 사람이 이겨요.</p>
+        <p><b>이닝 공평 규칙 (멀티 · 온라인 · AI 대전)</b> — 흰 공(먼저 치는 사람)이 먼저 목표를 채우면, 노란 공에게 <b>마지막 기회</b> 한 이닝을 줘요. 노란 공도 목표를 채우면 <b>동점 → 연장전</b>: 흰 공부터 한 이닝씩 치고, <b>둘 중 한 명만 득점한 이닝</b>에서 그 사람이 이겨요. 둘 다 득점하거나 둘 다 못 하면 다음 이닝으로 넘어가요. 노란 공이 먼저 목표를 채우면 바로 이겨요.</p>
+        <p><b>온라인 대전</b> — 방장이 방을 만들고 방 코드를 친구에게 알려 주면, 친구가 코드로 들어와요. 방장은 흰 공, 참가자는 노란 공이에요. 규칙은 멀티 플레이와 같아요(4구 감점 −1점 · 최저 0점, 3구 뱅크샷 2점). 방장이 시작 전에 <b>목표 점수(1~30점)</b>와 4구 <b>마무리 쓰리쿠(0~2개)</b>를 정해요. 게임 중에 나가면 상대가 이겨요.</p>
       </div>
     </details>
     </div>
@@ -913,7 +970,7 @@ function spinFromEvent(e) {
   drawSpin(); schedulePred();
 }
 let spinDrag = false;
-sc.addEventListener('pointerdown', e => { spinDrag = true; sc.setPointerCapture(e.pointerId); spinFromEvent(e); });
+sc.addEventListener('pointerdown', e => { if (netLocked()) return; spinDrag = true; sc.setPointerCapture(e.pointerId); spinFromEvent(e); });
 sc.addEventListener('pointermove', e => { if (spinDrag) spinFromEvent(e); });
 sc.addEventListener('pointerup', () => spinDrag = false);
 
@@ -1057,6 +1114,7 @@ function schedulePred() {
   if (S.playing) return;
   clearTimeout(predTimer);
   predTimer = setTimeout(() => { S.predRes = S.pred ? runShot(true) : null; updateSys(); draw(); }, 40);
+  netAim();
   draw();
 }
 
@@ -1288,6 +1346,7 @@ function draw() {
   }
   if (S.lastRes && S.trail) { drawPaths(S.lastRes, undefined, 0.45, false); drawMarkers(S.lastRes); }
   if (S.predRes && S.pred && !S.lastRes) { drawPaths(S.predRes, undefined, 0.5, true); drawMarkers(S.predRes); }
+  if (S.aiPreview && !S.lastRes) { drawPaths(S.aiPreview, undefined, 0.7, true); drawMarkers(S.aiPreview); }   // AI가 미리 본 길
   if (!S.lastRes) drawAim();
   if (S.sys && !S.lastRes) drawSys();
   S.balls.forEach((b, i) => drawBall(b.x, b.y, b.q, cols[i], i === S.cue));
@@ -1305,10 +1364,13 @@ function showResult(res) {
 }
 
 // ---------- play ----------
-function shoot() {
+function shoot(byAi) {
   if (S.playing) return;
   if (S.game && (S.game.over || S.game.paused)) return;
+  if (byAi !== true && netLocked()) return;
+  S.aiPreview = null;
   if (S.lastRes) commitLast();
+  if (S.game && S.game.online) netSend({ t: 'shot', balls: packBalls(), cue: S.cue, phi: S.phi, a: S.a, b: S.b, V: S.V, elev: S.elev });
   const res = runShot(true);
   S.undo = C.cloneBalls(S.balls);
   S.playing = { res, t: 0, last: performance.now(), speed: +$('speed').value };
@@ -1326,52 +1388,172 @@ function tick(now) {
 }
 function finish() {
   const res = S.playing.res;
-  const isBreak = S.playing.isBreak;
+  const isBreak = S.playing.isBreak, remote = S.playing.remote;
   S.playing = null;
   const fin = res.frames[res.frames.length - 1].b;
   S.balls.forEach((b, i) => { b.x = fin[i][0]; b.y = fin[i][1]; b.q = [fin[i][2], fin[i][3], fin[i][4], fin[i][5]]; });
   if (isBreak) { afterBreak(); return; }
   S.lastRes = res;
   showResult(res);
+  if (remote) { draw(); netPump(); return; }   // 상대 샷: 점수 계산은 상대 컴퓨터가 해서 보내 줌
   if (S.game) gameAfterShot(res);
   draw();
 }
 function commitLast() { S.lastRes = null; schedulePred(); }
 
-// ---------- auto aim ----------
-function autoAim() {
+// ---------- 샷 찾기 엔진 (자동 조준 · AI 공용) ----------
+// 1단계 득점 경로 찾기: 방향 × 세기 × 당점을 바꿔 가며 물리 엔진으로 미리 쳐 봄
+// 2단계 확실성: 조준 ±0.25°, 세기 ±5% 틀어도 들어가는지
+// 3단계 뒷공: 공이 멈춘 자리에서 다음 샷 득점 경로가 몇 개인지 다시 계산 (포지션 플레이)
+// 4구 모아치기: 살살·얇게·끌어서 수구와 빨간 공 2개를 가까이 모아 다음 샷을 쉽게 만듦
+// 득점 길이 없으면 수비: 상대에게 칠 길이 가장 적게 남는 안전한 샷
+const yieldUI = () => new Promise(r => setTimeout(r, 0));
+function shotJudge(kind, cue, firstShot) {
+  return events => {
+    if (kind === 'three') return evalThree4(events, cue);
+    const ev = C.evaluate(kind, events, cue);
+    if (kind === '3c' && firstShot && ev.ok) { const fb = ev.seq.find(s => s.t === 'b'); if (!fb || fb.id !== 2) { ev.ok = false; ev.msg = '초구 실패 (빨간 공 먼저)'; } }
+    return ev;
+  };
+}
+function shotCands(balls, cue, kind, dense) {
+  const R = S.p.R, cb = balls[cue], need2 = kind !== '4b';
+  const targets = need2 ? balls.map((b, i) => i).filter(i => i !== cue) : [2, 3];
+  const Vs = kind === '3c' ? [2.0, 2.6, 3.2, 3.8, 4.4] : kind === 'three' ? [2.2, 2.8, 3.4, 4.0] : [0.45, 0.6, 0.8, 1.0, 1.3, 1.7, 2.2, 2.8];
+  const As = need2 ? [-0.4, -0.2, 0, 0.2, 0.4] : [-0.3, 0, 0.3];
+  const Bs = need2 ? [-0.3, 0, 0.3] : [-0.5, -0.25, 0, 0.3];
+  const K = dense ? 30 : 12, cands = [];
+  for (const ti of targets) {
+    const o = balls[ti], d = Math.hypot(o.x - cb.x, o.y - cb.y), base = Math.atan2(o.y - cb.y, o.x - cb.x);
+    const w = Math.asin(Math.min(1, 2 * R / Math.max(d, 2 * R))) * 0.97;
+    for (let k = 0; k < K; k++) { const phi = base - w + 2 * w * (k + 0.5) / K; for (const V of Vs) for (const a of As) for (const b of Bs) cands.push([phi, V, a, b]); }
+  }
+  if (dense) for (let d = 0; d < 360; d += 1) for (const V of (kind === '4b' ? [1.6] : [2.8, 3.6])) for (const a of [-0.3, 0, 0.3]) cands.push([d * Math.PI / 180, V, a, 0.2]);
+  for (let i = cands.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = cands[i]; cands[i] = cands[j]; cands[j] = t; }
+  return cands;
+}
+function freshBalls(balls) { const bs = C.cloneBalls(balls); bs.forEach(b => { b.vx = b.vy = b.wx = b.wy = b.wz = 0; }); return bs; }
+function makeTrier(balls, cue, judge, need2) {
+  const stopWhen = (events, bs) => { const b = bs[cue]; if (!(b.vx || b.vy || b.wx || b.wy)) return true; const e = judge(events); return need2 ? e.hit.length >= 2 : e.foul; };
+  return c => { const bs = freshBalls(balls); C.strike(bs[cue], S.p, c[0], c[1], c[2], c[3], 0); return judge(C.simulate(bs, S.p, S.T, { stopWhen }).events); };
+}
+function finalBalls(balls, cue, c) { const bs = freshBalls(balls); C.strike(bs[cue], S.p, c[0], c[1], c[2], c[3], 0); return C.simulate(bs, S.p, S.T, {}).balls; }
+function isFrozen(bs, cue) { const R = S.p.R, cb = bs[cue]; return bs.some((o, i) => i !== cue && Math.hypot(o.x - cb.x, o.y - cb.y) < 2 * R + 0.001); }
+// 4구: 수구 + 빨간 공 2개 사이 거리 합 (작을수록 잘 모임)
+function spreadOf(bs, cue) { const d = (i, j) => Math.hypot(bs[i].x - bs[j].x, bs[i].y - bs[j].y); return d(cue, 2) + d(cue, 3) + d(2, 3); }
+// 주어진 배치에서 득점 경로 수를 짧게 세어 봄
+async function countRoutes(balls, cue, kind, budget, ms, alive) {
+  const judge = shotJudge(kind, cue, false), tryShot = makeTrier(balls, cue, judge, kind !== '4b');
+  const cands = shotCands(balls, cue, kind, false);
+  let n = 0, ok = 0; const t0 = performance.now(); let ts = t0;
+  for (const c of cands) {
+    if (n >= budget || performance.now() - t0 > ms) break;
+    if (tryShot(c).ok) ok++;
+    n++;
+    if (performance.now() - ts > 30) { await yieldUI(); if (!alive()) return null; ts = performance.now(); }
+  }
+  return { n, ok };
+}
+async function solveShot(o) {
+  const { balls, cue, kind, alive, progress } = o;
+  const need2 = kind !== '4b', is3 = kind === '3c';
+  const tryShot = makeTrier(balls, cue, shotJudge(kind, cue, o.firstShot), need2);
+  const rate = e => {
+    if (e.ok) { const bank = is3 && e.seq.length > 0 && e.seq[0].t === 'c'; return { ok: true, bank, q: 1000 + (bank ? 150 : 0) }; }
+    if (need2) return { ok: false, q: e.hit.length * 10 + Math.min(e.cushions || 0, 3) * 3 };
+    if (e.foul || e.hit.length === 0) return { ok: false, q: -50 };
+    return { ok: false, q: 10 };
+  };
+  const info = { sims: 0, routes: 0 };
+  const cands = shotCands(balls, cue, kind, true);
+  let best = null;
+  const oks = [], misses = [];
+  const t0 = performance.now(); let ts = t0, idx = 0;
+  while (idx < cands.length) {
+    const el = performance.now() - t0;
+    if (el > o.maxT || (el > o.minT && oks.length >= 16)) break;
+    const c = cands[idx++], r = rate(tryShot(c)); r.c = c; info.sims++;
+    if (r.ok) oks.push(r); else misses.push(r);
+    if (!best || r.q > best.q) best = r;
+    if (performance.now() - ts > 30) { info.routes = oks.length; progress('1단계 득점 경로 찾기', info); await yieldUI(); if (!alive()) return null; ts = performance.now(); }
+  }
+  info.routes = oks.length;
+  if (oks.length) {
+    oks.sort((x, y) => y.q - x.q);
+    const top = oks.slice(0, 16), dp = 0.25 * Math.PI / 180;
+    for (const r of top) {
+      const [phi, V, a, b] = r.c;
+      r.rob = [[phi + dp, V], [phi - dp, V], [phi, V * 0.95], [phi, V * 1.05]].filter(([p2, V2]) => tryShot([p2, V2, a, b]).ok).length;
+      r.fin = finalBalls(balls, cue, r.c); info.sims += 5;
+      r.frozen = isFrozen(r.fin, cue);
+      if (kind === '4b') { r.spread = spreadOf(r.fin, cue); r.gather = Math.max(0, 150 * (1 - r.spread / 1.6)); } else r.gather = 0;
+      r.pre = r.q + r.rob * 80 + r.gather - (r.frozen ? 60 : 0);
+      progress('2단계 확실성 검사', info); await yieldUI(); if (!alive()) return null;
+    }
+    top.sort((x, y) => y.pre - x.pre);
+    const look = top.slice(0, o.look || 6);
+    for (let k = 0; k < look.length; k++) {
+      const r = look[k];
+      progress('3단계 뒷공 계산 ' + (k + 1) + '/' + look.length, info);
+      const cr = r.frozen ? { n: 0, ok: 0 } : await countRoutes(r.fin, cue, o.nextKind ? o.nextKind() : kind, 90, 900, alive);
+      if (!cr) return null;
+      info.sims += cr.n; r.next = cr.ok; r.nextN = cr.n;
+      r.score = r.pre + Math.min(cr.ok, 12) * 25;
+    }
+    best = look.sort((x, y) => y.score - x.score)[0];
+  } else if (o.defense && misses.length) {
+    // 수비: 감점 없는 샷 중 상대에게 남는 득점 경로가 가장 적은 샷
+    misses.sort((x, y) => y.q - x.q);
+    const pool = misses.filter(r => r.q >= 0).slice(0, 5);
+    const opp = cue === 0 ? 1 : 0;
+    for (let k = 0; k < pool.length; k++) {
+      const r = pool[k];
+      progress('수비 계산 ' + (k + 1) + '/' + pool.length, info);
+      r.fin = finalBalls(balls, cue, r.c); info.sims++;
+      const cr = await countRoutes(r.fin, opp, o.oppKind || kind, 70, 700, alive);
+      if (!cr) return null;
+      info.sims += cr.n; r.oppRoutes = cr.ok; r.oppN = cr.n;
+      r.score = r.q - cr.ok * 30;
+    }
+    if (pool.length) best = pool.sort((x, y) => y.score - x.score)[0];
+  }
+  return { best, info };
+}
+function spinText(a, b) {
+  const tip = v => (Math.abs(v) / 0.2).toFixed(1).replace(/\.0$/, '');
+  return (a > 0.01 ? '우 ' + tip(a) + '팁' : a < -0.01 ? '좌 ' + tip(a) + '팁' : '좌우 중앙') + ' · ' + (b > 0.01 ? '상 ' + tip(b) + '팁 (밀어치기)' : b < -0.01 ? '하 ' + tip(b) + '팁 (끌어치기)' : '상하 중앙');
+}
+// 고른 샷 설명: [제목, 자세히]
+function describeShot(out) {
+  const r = out.best, i = out.info, V = r.c[1], a = r.c[2], b = r.c[3], parts = [i.sims.toLocaleString() + '가지 계산'];
+  if (r.ok) {
+    parts.push('득점 경로 ' + i.routes + '개 중 선택');
+    if (r.rob !== undefined) parts.push('조준·세기 살짝 틀어도 ' + r.rob + '/4 성공');
+    if (r.next !== undefined) parts.push('뒷공: 다음 샷 득점 경로 ' + r.next + '/' + r.nextN);
+    if (r.spread !== undefined) parts.push('모아치기: 공 3개 간격 합 ' + Math.round(r.spread * 100) + 'cm');
+  } else if (r.oppRoutes !== undefined) parts.push('수비: 상대에게 남긴 득점 경로 ' + r.oppRoutes + '/' + r.oppN);
+  parts.push('세기 ' + V.toFixed(2) + ' · ' + spinText(a, b));
+  const title = r.ok ? (r.bank ? '뱅크샷 (2점)' : r.spread !== undefined && r.spread < 0.8 ? '모아치기' : r.next !== undefined && r.next >= 3 ? '뒷공까지 계산한 샷' : '득점 샷') : r.oppRoutes !== undefined ? '수비 샷' : '가장 가까운 샷';
+  return [title, parts.join(' · ')];
+}
+
+// ---------- 자동 조준: 방향 + 세기 + 당점 + 뒷공(4구는 모아치기)까지 ----------
+let autoTok = 0;
+async function autoAim() {
   if (S.playing) return;
   if (S.lastRes) commitLast();
-  const base = S.phi * 180 / Math.PI;
-  const tryAt = deg => { const keep = S.phi; S.phi = deg * Math.PI / 180; const { bs } = shotBalls(S.balls); S.phi = keep; const r = C.simulate(bs, S.p, S.T, { stopWhen: C.stopper(S.mode, S.cue) }); return C.evaluate(S.mode, r.events, S.cue).ok; };
-  const passes = [[8, 0.1], [25, 0.2], [180, 0.25]];
-  let pi = 0, list = [], idx = 0;
-  const busy = $('busy'); busy.style.display = 'flex';
-  function setup() { const [span, st] = passes[pi]; list = []; for (let d = -span; d <= span + 1e-9; d += st) list.push(base + d); list.sort((x, y) => Math.abs(x - base) - Math.abs(y - base)); idx = 0; S._ok = []; }
-  setup();
-  function step() {
-    const t0 = performance.now();
-    while (idx < list.length && performance.now() - t0 < 30) { const d = list[idx++]; if (tryAt(d)) S._ok.push(d); }
-    $('busyTxt').textContent = '해법 찾는 중… ' + Math.round(idx / list.length * 100) + '% (범위 ±' + passes[pi][0] + '°)';
-    if (idx < list.length) { setTimeout(step, 0); return; }
-    if (!S._ok.length) { pi++; if (pi < passes.length) { setup(); setTimeout(step, 0); return; } busy.style.display = 'none'; $('res').textContent = '이 당점·세기로는 해법 없음'; $('res').className = 'res ng'; $('seq').textContent = '당점이나 세기를 바꿔 다시 시도해 보세요.'; return; }
-    // group runs, choose the widest, refine edges
-    const st = passes[pi][1]; const ok = S._ok.sort((a, b) => a - b);
-    let runs = [], cur = [ok[0], ok[0]];
-    for (let i = 1; i < ok.length; i++) { if (ok[i] - cur[1] <= st * 1.5) cur[1] = ok[i]; else { runs.push(cur); cur = [ok[i], ok[i]]; } }
-    runs.push(cur);
-    runs.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]) || Math.abs((a[0] + a[1]) / 2 - base) - Math.abs((b[0] + b[1]) / 2 - base));
-    let [lo, hi] = runs[0];
-    const f = 0.01; let n = 0;
-    while (n++ < 60 && tryAt(lo - f)) lo -= f;
-    n = 0; while (n++ < 60 && tryAt(hi + f)) hi += f;
-    S.phi = (lo + hi) / 2 * Math.PI / 180;
-    busy.style.display = 'none';
-    $('res').textContent = '해법 찾음'; $('res').className = 'res ok';
-    $('seq').textContent = '허용 조준 오차 ±' + ((hi - lo) / 2 + f / 2).toFixed(2) + '° (넓을수록 쉬운 공)';
-    schedulePred();
-  }
-  setTimeout(step, 30);
+  const tok = ++autoTok, busy = $('busy'); busy.style.display = 'flex';
+  const out = await solveShot({ balls: C.cloneBalls(S.balls), cue: S.cue, kind: S.mode === '3c' ? '3c' : '4b', firstShot: false,
+    minT: 2000, maxT: 6000, look: 6, defense: false, alive: () => tok === autoTok && !S.playing,
+    progress: (st, i) => { $('busyTxt').textContent = '자동 조준 · ' + st + ' — ' + i.sims.toLocaleString() + '가지 계산 · 득점 경로 ' + i.routes + '개'; } });
+  if (tok !== autoTok) return;
+  busy.style.display = 'none';
+  if (!out) return;
+  if (!out.best || !out.best.ok) { setStatus('해법 없음', out.info.sims.toLocaleString() + '가지를 계산했지만 득점 경로가 없어요. 공 배치를 바꿔 보세요.', 'ng'); return; }
+  S.phi = out.best.c[0]; S.V = out.best.c[1]; S.a = out.best.c[2]; S.b = out.best.c[3]; S.elev = 0;
+  drawSpin(); schedulePred();
+  const [t, d] = describeShot(out);
+  setStatus('해법 찾음 — ' + t, d, 'ok');
 }
 
 // ---------- presets ----------
@@ -1415,7 +1597,7 @@ function buildPhys() {
 // ---------- input on table ----------
 let drag = null;
 cv.addEventListener('pointerdown', e => {
-  if (S.playing) return;
+  if (S.playing || netLocked()) return;
   const rc = cv.getBoundingClientRect();
   const [wx, wy] = toWorld(e.clientX - rc.left, e.clientY - rc.top);
   cv.setPointerCapture(e.pointerId);
@@ -1454,9 +1636,9 @@ function setMode(m) {
 }
 $('preset').onchange = () => { if ($('preset').value) loadPreset($('preset').value); };
 $('btnLoad').onclick = () => { if ($('preset').value) loadPreset($('preset').value); };
-$('power').oninput = e => { S.V = +e.target.value; schedulePred(); };
-$('elev').oninput = e => { S.elev = +e.target.value; schedulePred(); };
-$('spinReset').onclick = () => { S.a = 0; S.b = 0; drawSpin(); schedulePred(); };
+$('power').oninput = e => { if (netLocked()) { updReads(); return; } S.V = +e.target.value; schedulePred(); };
+$('elev').oninput = e => { if (netLocked()) { updReads(); return; } S.elev = +e.target.value; schedulePred(); };
+$('spinReset').onclick = () => { if (netLocked()) return; S.a = 0; S.b = 0; drawSpin(); schedulePred(); };
 const PAINTS = [];
 window.__repaint = () => PAINTS.forEach(f => f());
 function tog(id, key, label) {
@@ -1470,8 +1652,8 @@ tog('tgAim', 'aimLine', '조준선'); tog('tgPred', 'pred', '예상 경로'); to
 $('tgSys').addEventListener('click', () => { $('sysBox').style.display = S.sys ? '' : 'none'; schedulePred(); });
 $('sysApply').onclick = () => { const ci = S.sysInfo; if (!ci) return; const a = Math.min(0.6, ci.tip * 0.2) * ci.sign; S.a = Math.round(a * 50) / 50; drawSpin(); schedulePred(); };
 $('tgPlace').onclick = e => { S.place = !S.place; e.target.classList.toggle('on', S.place); };
-document.querySelectorAll('.aimgrid button').forEach(bt => bt.onclick = () => { if (S.lastRes) commitLast(); S.phi += (+bt.dataset.d) * Math.PI / 180; schedulePred(); });
-$('btnShoot').onclick = shoot;
+document.querySelectorAll('.aimgrid button').forEach(bt => bt.onclick = () => { if (netLocked()) return; if (S.lastRes) commitLast(); S.phi += (+bt.dataset.d) * Math.PI / 180; schedulePred(); });
+$('btnShoot').onclick = () => shoot();
 $('btnUndo').onclick = () => { if (S.game) return; if (S.playing) { S.playing = null; } if (S.undo) { S.balls = C.cloneBalls(S.undo); } S.lastRes = null; $('res').textContent = '되돌림'; $('res').className = 'res'; $('seq').textContent = ''; schedulePred(); };
 $('btnAuto').onclick = autoAim;
 $('speed').onchange = e => { if (S.playing) S.playing.speed = +e.target.value; };
@@ -1624,15 +1806,16 @@ function startClock() {
     if (!g || g.over) { clearInterval(clock); return; }
     if (!g.running || g.paused) return;
     g.remain -= dt;
-    if (g.remain <= 0) { g.remain = 0; if (!S.playing) endGame(false, 'time'); }
+    if (g.remain <= 0) { g.remain = 0; if (!S.playing && (!g.online || g.turn === g.seat)) endGame(false, 'time'); }
     updHud();
   }, 200);
 }
 function closeModals() { $('menuModal').style.display = 'none'; $('endModal').style.display = 'none'; }
-function startGame(t, lv, multi) {
+// opts: { kind: 'online' | 'ai', target, three, names: [0번, 1번], seat: 내 자리 }
+function startGame(t, lv, multi, opts) {
   t = t || lastGameTable; lv = lv === undefined ? lastGameLevel : lv; multi = multi === undefined ? lastGameMulti : !!multi;
-  lastGameTable = t; lastGameLevel = lv; lastGameMulti = multi;
-  closeModals();
+  if (opts) multi = true; else { lastGameTable = t; lastGameLevel = lv; lastGameMulti = multi; }
+  closeModals(); aiStop();
   S.game = null; S.playing = null;
   document.body.classList.remove('practice'); document.body.classList.add('ingame');
   $('gameHud').style.display = 'flex';
@@ -1640,25 +1823,32 @@ function startGame(t, lv, multi) {
   if (window.__repaint) window.__repaint();
   $('sysBox').style.display = 'none'; $('tgPlace').classList.remove('on');
   setMode(t);
-  const cfg = levelCfg(t, lv, multi);
+  const cfg = opts ? customCfg(t, opts) : levelCfg(t, lv, multi);
   S.game = { table: t, level: lv, multi, target: cfg.target, threeNeed: cfg.three, three: 0, phase: 'normal', score: 0, fails: 0, fouls: 0, shots: 0,
-    remain: cfg.time, running: false, paused: false, over: false, firstShot: t === '3c', turn: 0, banks: 0 };
+    remain: cfg.time, running: false, paused: false, over: false, firstShot: t === '3c', turn: 0, banks: 0,
+    online: !!(opts && opts.kind === 'online'), ai: !!(opts && opts.kind === 'ai'), seat: opts ? opts.seat : 0, cfg };
   if (multi) {
     const nm = (id, d) => ($(id).value || '').trim() || d;
-    S.game.pl = [{ name: nm('pName1', '플레이어 1'), ball: 0 }, { name: nm('pName2', '플레이어 2'), ball: 1 }]
+    const names = opts ? opts.names : [nm('pName1', '플레이어 1'), nm('pName2', '플레이어 2')];
+    S.game.pl = [{ name: names[0], ball: 0 }, { name: names[1], ball: 1 }]
       .map(p => Object.assign(p, { score: 0, three: 0, phase: 'normal', fails: 0, fouls: 0, shots: 0 }));
   }
+  if (S.game.online) NET.queue = [];
+  if (S.game.ai) S.game.aiStats = { sims: 0, aiShots: 0, aiOk: 0, myShots: 0, myOk: 0, last: null };
   setBallsStart(t);
   S.cue = 0; S.a = 0; S.b = 0; S.V = t === '3c' ? 2.8 : 1.6; S.elev = 0; aimAtRed(); drawSpin();
   updHud(); layout();
   startClock();
-  if (t === '4b') { doBreak(); return; }
+  if (t === '4b') {
+    if (S.game.online && S.game.seat !== 0) { setStatus('방장이 공을 깨는 중…', '잠시 기다려 주세요'); return; }
+    doBreak(); return;
+  }
   S.game.running = true;
   setStatus((multi ? plName(0) + ' 초구 — ' : '첫 샷 — ') + '빨간 공을 먼저 맞히세요', '두 적구를 맞히되, 두 번째 공 전에 쿠션 3개 이상');
   schedulePred();
 }
 function startPractice(t) {
-  closeModals(); clearInterval(clock);
+  closeModals(); clearInterval(clock); aiStop();
   S.game = null; S.playing = null;
   document.body.classList.remove('ingame'); document.body.classList.add('practice');
   $('gameHud').style.display = 'none';
@@ -1669,7 +1859,8 @@ function startPractice(t) {
 }
 function updHud() {
   const g = S.game; if (!g) return;
-  $('hudMode').textContent = (g.multi ? '👥 ' : '') + GAME_CFG[g.table].name + ' · ' + GAME_CFG[g.table].levels[g.level].nm;
+  $('hudMode').textContent = g.online ? '🌐 온라인 · ' + GAME_CFG[g.table].name : g.ai ? '🤖 AI 대전 · ' + GAME_CFG[g.table].name :
+    (g.multi ? '👥 ' : '') + GAME_CFG[g.table].name + ' · ' + GAME_CFG[g.table].levels[g.level].nm;
   if (g.multi) {
     savePl(g);
     const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -1687,12 +1878,17 @@ function updHud() {
   if (g.table === '3c') rule = '<b>3쿠션</b> — ' + opp + '과 빨간 공을 모두 맞히되, <b>두 번째 공 전에 쿠션 3개 이상</b>. 쿠션을 먼저 맞히는 <b>뱅크샷은 2점</b>.' + (g.firstShot ? ' 지금은 초구라서 <b>빨간 공을 먼저</b> 맞혀야 해요.' : '');
   else if (g.phase === 'normal') rule = '<b>4구</b> — 빨간 공 2개를 모두 맞히면 +1점. <b>' + opp + ' 접촉 · 헛맞음은 −1점</b>. ' + g.target + '점을 채우면 ' + (g.threeNeed ? '마무리 쓰리쿠 ' + g.threeNeed + '개로 넘어가요.' : win);
   else rule = '<b>마무리 쓰리쿠</b> — 아무 공 2개를 맞히되 <b>두 번째 공 전에 쿠션 3개 이상</b> (' + opp + ' 맞혀도 돼요). ' + g.threeNeed + '번 성공하면 ' + win;
-  if (g.multi) rule = '<b style="color:var(--accent)">' + plName(g.turn).replace(/</g, '&lt;') + ' 차례 · 내 공은 ' + ballName(S.cue) + '</b> — 득점하면 계속, 못 치면 상대 차례. ' + rule;
-  $('ruleBox').innerHTML = rule + ' <span style="opacity:.8">· 수구가 쿠션에 닿을 때마다 쿠션이 노랗게 빛나고 번호가 붙어요.</span>';
+  if (g.online || g.ai) rule = (g.turn === g.seat ? '<b style="color:var(--accent)">내 차례 · 내 공은 ' + ballName(g.seat) + '</b>'
+      : '<b style="color:var(--accent)">' + plName(g.turn).replace(/</g, '&lt;') + ' 차례</b> — ' + (g.ai ? 'AI가 치는 걸 지켜보세요' : '상대가 치는 걸 지켜보세요')) + ' · 득점하면 계속, 못 치면 상대 차례. ' + rule;
+  else if (g.multi) rule = '<b style="color:var(--accent)">' + plName(g.turn).replace(/</g, '&lt;') + ' 차례 · 내 공은 ' + ballName(S.cue) + '</b> — 득점하면 계속, 못 치면 상대 차례. ' + rule;
+  if (g.multi && g.endPhase === 'last') rule = '<b style="color:var(--accent)">🏁 마지막 기회</b> — ' + plName(0).replace(/</g, '&lt;') + '이(가) 먼저 목표를 채웠어요. ' + plName(1).replace(/</g, '&lt;') + '도 이번 이닝에 채우면 동점 → 연장전, 못 채우면 ' + plName(0).replace(/</g, '&lt;') + ' 승리. ' + rule;
+  else if (g.multi && g.endPhase === 'tb') rule = '<b style="color:var(--accent)">⚖️ 연장 ' + g.tbRound + '이닝</b> — 한 이닝씩 쳐서 <b>둘 중 한 명만 득점하면 승리</b>, 둘 다 득점하거나 둘 다 못 하면 다음 이닝. (이번 이닝 ' + plName(0).replace(/</g, '&lt;') + ': ' + (g.turn === 1 ? (g.tb[0] ? '득점 ⭕' : '실패 ❌') : '치는 중') + ') ' + rule;
+  $('ruleBox').innerHTML = rule + ' <span style="opacity:.8">· 수구가 쿠션에 닿을 때마다 쿠션이 노랗게 빛나고 번호가 붙어요.</span>' + (g.ai ? '<br>' + aiGapHtml(g) : '');
 }
 function gameAfterShot(res) {
   const g = S.game; g.shots++;
   const ev = res.ev; let note;
+  if (g.ai) { const st = g.aiStats; if (g.turn === g.seat) { st.myShots++; if (ev.ok) st.myOk++; } else { st.aiShots++; if (ev.ok) st.aiOk++; } }
   if (g.table === '3c') {
     g.firstShot = false;
     if (ev.ok) {
@@ -1712,19 +1908,39 @@ function gameAfterShot(res) {
   } else {
     if (ev.ok) { g.three++; note = '쓰리쿠 성공 ' + g.three + '/' + g.threeNeed; } else { g.fails++; note = '쓰리쿠 실패'; }
   }
-  const won = g.table === '3c' ? g.score >= g.target : g.phase === 'three' ? g.three >= g.threeNeed : (g.threeNeed === 0 && g.score >= g.target);
+  let won = g.table === '3c' ? g.score >= g.target : g.phase === 'three' ? g.three >= g.threeNeed : (g.threeNeed === 0 && g.score >= g.target);
   // 멀티: 득점하면 계속, 못 치거나 감점이면 상대 차례 (대회 규칙)
-  let turnMsg = '';
-  if (g.multi && !won && !ev.ok) {
-    switchTurn(g);
-    turnMsg = ' → ' + plName(g.turn) + ' 차례 (' + ballName(S.cue) + ')';
-    toast(plName(g.turn) + ' 차례!');
-  } else if (g.multi && ev.ok && !won) turnMsg = ' · ' + plName(g.turn) + ' 계속';
+  // 이닝 공평 규칙: 흰 공(먼저 친 사람)이 먼저 끝내면 노란 공에게 마지막 기회.
+  // 노란 공도 끝내면 동점 → 연장: 흰 공·노란 공이 한 이닝씩 치고, 둘 중 한 명만 득점한 이닝에서 끝
+  let turnMsg = '', sw = false;
+  const sh = g.turn;
+  if (g.multi) {
+    if (!g.endPhase) {
+      if (won && sh === 0) { won = false; g.endPhase = 'last'; sw = true; turnMsg = ' · 🏁 ' + plName(0) + ' 목표 달성! ' + plName(1) + '에게 마지막 기회'; }
+      else if (!won && !ev.ok) sw = true;
+    } else if (g.endPhase === 'last') {
+      if (won) { won = false; g.endPhase = 'tb'; g.tb = [false, false]; g.tbRound = 1; sw = true; turnMsg = ' · ⚖️ 동점! 연장전 — 한 명만 득점한 이닝에서 끝나요'; }
+      else if (!ev.ok) { won = true; g.forceWinner = 0; g.endNote = plName(1) + ' 마지막 기회 실패'; }
+    } else {
+      won = false;
+      if (ev.ok) {
+        g.tb[sh] = true;
+        if (sh === 1 && !g.tb[0]) { won = true; g.forceWinner = 1; g.endNote = '연장 ' + g.tbRound + '이닝 — ' + plName(1) + '만 득점'; }
+      } else if (sh === 0) sw = true;
+      else if (g.tb[0] !== g.tb[1]) { won = true; g.forceWinner = g.tb[0] ? 0 : 1; g.endNote = '연장 ' + g.tbRound + '이닝 — ' + plName(g.forceWinner) + '만 득점'; }
+      else { sw = true; turnMsg = ' · ⚖️ 둘 다 ' + (g.tb[0] ? '득점' : '득점 실패') + ' → 연장 ' + (g.tbRound + 1) + '이닝'; g.tbRound++; g.tb = [false, false]; }
+    }
+    if (sw) {
+      switchTurn(g);
+      turnMsg += ' → ' + plName(g.turn) + ' 차례 (' + ballName(S.cue) + ')';
+      toast(g.endPhase === 'last' && sh === 0 ? plName(1) + ' 마지막 기회!' : g.endPhase === 'tb' && g.turn === 0 ? '연장 ' + g.tbRound + '이닝!' : plName(g.turn) + ' 차례!');
+    } else if (!won) turnMsg += ' · ' + plName(g.turn) + ' 계속';
+  }
   // 다음에 칠 수구가 다른 공에 붙으면 3구는 초구 배치, 4구는 다시 깨기
   const R = S.p.R, cb = S.balls[S.cue];
   const frozen = !won && S.balls.some((o, i) => i !== S.cue && Math.hypot(o.x - cb.x, o.y - cb.y) < 2 * R + 0.001);
   if (frozen && g.table === '3c') { setBallsStart('3c', S.cue); g.firstShot = true; }
-  if (turnMsg && !ev.ok) aimAtRed();
+  if (sw) aimAtRed();
   else if (frozen && g.table === '3c') aimAtRed();
   $('seq').textContent = note + turnMsg + ' · ' + $('seq').textContent.split(' · 스쿼트')[0] + (frozen && g.table === '3c' ? ' · 공이 붙어 초구 배치로' : '');
   updHud();
@@ -1733,17 +1949,26 @@ function gameAfterShot(res) {
   else if (g.remain <= 0) endGame(false, 'time');
   else if (frozen && g.table === '4b') { setBallsStart('4b'); doBreak('공이 붙어서 다시 깹니다'); }
   else schedulePred();
+  if (g.online && !g.over && !S.playing) netSendState();
+  if (g.ai && !g.over && !S.playing) aiMaybeTurn();
 }
 // 4구 깨기: 공 4개를 양쪽 장쿠션에서 동시에 쳐서 가운데서 부딪치게 함 (매번 무작위)
-function doBreak(msg) {
+// seed: 온라인에서 두 컴퓨터가 똑같이 깨지도록 쓰는 난수 씨앗
+function doBreak(msg, seed) {
   const u0 = u(), R = S.p.R, W = S.T.W;
-  const rnd = (a, b) => a + Math.random() * (b - a);
+  if (seed === undefined) {
+    seed = (Math.random() * 4294967296) >>> 0;
+    if (S.game && S.game.online) netSend({ t: 'break', seed, msg: msg || '' });
+  }
+  let st = seed >>> 0;
+  const rand = () => { st = (st + 0x6D2B79F5) >>> 0; let x = st; x = Math.imul(x ^ (x >>> 15), x | 1); x ^= x + Math.imul(x ^ (x >>> 7), x | 61); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+  const rnd = (a, b) => a + rand() * (b - a);
   if (S.game) S.game.running = false;
   let res = null, last = null;
   for (let tries = 0; tries < 30 && !res; tries++) {
     setBallsStart('4b');
     const bs = C.cloneBalls(S.balls);
-    const sideA = Math.random() < 0.5 ? -1 : 1, sideB = Math.random() < 0.5 ? -1 : 1;
+    const sideA = rand() < 0.5 ? -1 : 1, sideB = rand() < 0.5 ? -1 : 1;
     const start = [
       [4 + sideA * rnd(0.5, 1.1), 0], [4 - sideA * rnd(0.5, 1.1), 0],
       [4 + sideB * rnd(0.5, 1.1), 1], [4 - sideB * rnd(0.5, 1.1), 1],
@@ -1781,28 +2006,38 @@ function afterBreak() {
   const who = S.game && S.game.multi ? plName(S.game.turn) + ' 차례 — ' : '';
   setStatus('깨기 완료 — ' + who + '샷을 치세요', three ? '마무리 쓰리쿠: 공 2개 + 쿠션 3개 이상' : '빨간 공 2개를 맞히고 ' + oppBallName() + '은 피하기');
   updHud(); schedulePred(); draw();
+  const g = S.game;
+  if (g && g.online) { if (g.turn === g.seat) netSendState(); else netPump(); }
+  if (g && g.ai) aiMaybeTurn();
 }
 // 멀티 플레이 결과 화면
 function endMulti(g, win, reason) {
   savePl(g);
-  const cfg = levelCfg(g.table, g.level, true), used = cfg.time - g.remain;
+  const cfg = g.cfg && (g.online || g.ai) ? g.cfg : levelCfg(g.table, g.level, true), used = cfg.time - g.remain;
   const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const [a, b] = g.pl, pa = a.score + a.three, pb = b.score + b.three;
   let winner = -1;
-  if (win) winner = g.turn;
+  if (win) winner = g.forceWinner !== undefined ? g.forceWinner : g.turn;
   else if (reason === 'time') winner = pa > pb ? 0 : pb > pa ? 1 : -1;
-  $('endTitle').textContent = winner >= 0 ? '🏆 ' + g.pl[winner].name + ' 승리!' : reason === 'time' ? '시간 종료 ⏰ 무승부' : '게임 종료';
+  else if (reason === 'left' || reason === 'quit' && (g.online || g.ai)) winner = g.leftWinner !== undefined ? g.leftWinner : 1 - g.seat;
+  $('endTitle').textContent = winner >= 0 ? '🏆 ' + g.pl[winner].name + ' 승리!' + (reason === 'left' ? ' (상대가 나감)' : reason === 'quit' ? ' (기권)' : win && g.endNote ? ' (' + g.endNote + ')' : '') : reason === 'time' ? '시간 종료 ⏰ 무승부' : '게임 종료';
+  $('endRetry').style.display = g.online ? 'none' : '';
+  const aiLine = g.ai ? '<br><br>' + aiGapHtml(g) + (g.aiStats.aiShots ? '<br>AI는 한 번 칠 때마다 평균 <b>' + Math.round(g.aiStats.sims / Math.max(1, g.aiStats.aiShots)).toLocaleString() + '가지</b> 샷을 미리 쳐 보고 골랐어요.' : '') : '';
   $('endScore').textContent = a.name + ' ' + a.score + ' : ' + b.score + ' ' + b.name;
   const line = p => (p.ball === 0 ? '⚪ ' : '🟡 ') + esc(p.name) + ' — ' + p.score + '점' + (g.threeNeed ? ' · 쓰리쿠 ' + p.three + '/' + g.threeNeed : '') +
     ' · ' + p.shots + '샷 · 실패 ' + p.fails + (g.table === '4b' ? ' · 감점 ' + p.fouls : '');
-  $('endDetail').innerHTML = '👥 멀티 · ' + GAME_CFG[g.table].name + ' ' + cfg.nm + ' (목표 ' + goalText(cfg) + ') · ' +
-    (win ? '걸린 시간 <b>' + fmtTime(used) + '</b>' : '남은 시간 ' + fmtTime(g.remain)) + '<br>' + line(a) + '<br>' + line(b);
+  $('endDetail').innerHTML = (g.online ? '🌐 온라인 · ' + GAME_CFG[g.table].name : g.ai ? '🤖 AI 대전 · ' + GAME_CFG[g.table].name : '👥 멀티 · ' + GAME_CFG[g.table].name + ' ' + cfg.nm) + ' (목표 ' + goalText(cfg) + ') · ' +
+    (win ? '걸린 시간 <b>' + fmtTime(used) + '</b>' : '남은 시간 ' + fmtTime(g.remain)) + '<br>' + line(a) + '<br>' + line(b) + aiLine;
   setTimeout(() => { if (S.game === g) $('endModal').style.display = 'flex'; }, 500);
 }
 function endGame(win, reason) {
   const g = S.game; if (!g || g.over) return;
   g.over = true; g.running = false; clearInterval(clock);
+  g.win = win; g.reason = reason;
+  if (g.ai) aiStop();
+  if (g.online && reason !== 'left' && reason !== 'quit' && g.turn === g.seat) netSendState();
   if (g.multi) { endMulti(g, win, reason); return; }
+  $('endRetry').style.display = '';
   const cfg = GAME_CFG[g.table].levels[g.level], used = cfg.time - g.remain, key = g.table + '_' + g.level;
   const best = loadBest(), old = best[key] || {};
   const prog = g.score + g.three;
@@ -1819,10 +2054,14 @@ function endGame(win, reason) {
 }
 function paintMenu() {
   const b = loadBest(), inGame = S.game && !S.game.over;
-  if (inGame) playMode = S.game.multi ? 'multi' : 'solo';
+  if (inGame) playMode = S.game.online ? 'online' : S.game.ai ? 'ai' : S.game.multi ? 'multi' : 'solo';
   const multi = playMode === 'multi';
   $('pickView').style.display = playMode ? 'none' : '';
-  $('gameView').style.display = playMode ? '' : 'none';
+  $('gameView').style.display = playMode === 'solo' || playMode === 'multi' ? '' : 'none';
+  $('onlineView').style.display = playMode === 'online' ? '' : 'none';
+  $('aiView').style.display = playMode === 'ai' ? '' : 'none';
+  if (playMode === 'online') paintOnline();
+  if (playMode === 'ai') paintAi();
   $('playLabel').textContent = multi ? '👥 멀티 플레이 (2명)' : '👤 개인 플레이';
   $('multiNames').style.display = multi ? '' : 'none';
   document.querySelectorAll('#menuModal .tlim').forEach(s => s.textContent = multi ? '20분' : '5분');
@@ -1835,10 +2074,11 @@ function paintMenu() {
   $('menuBest').textContent = '';
   paintCues();
   $('menuResume').style.display = (inGame || document.body.classList.contains('practice')) ? '' : 'none';
-  $('menuSub').textContent = inGame ? '일시정지 중 — 시계가 멈췄어요. 다른 걸 고르면 지금 게임은 끝나요.' : '게임을 골라 시작하세요.';
+  $('menuSub').textContent = inGame && S.game.online ? '온라인 게임 중 — 시계는 멈추지 않아요. [계속하기]로 돌아가세요.' :
+    inGame ? '일시정지 중 — 시계가 멈췄어요. 다른 걸 고르면 지금 게임은 끝나요.' : '게임을 골라 시작하세요.';
 }
 function openMenu() {
-  if (S.game && !S.game.over) S.game.paused = true;
+  if (S.game && !S.game.over && !S.game.online) S.game.paused = true;
   $('endModal').style.display = 'none';
   paintMenu(); $('menuModal').style.display = 'flex';
 }
@@ -1858,12 +2098,306 @@ $('playChange').onclick = () => {
   if (S.game && !S.game.over) { $('menuSub').textContent = '게임 중에는 방식을 못 바꿔요 — 먼저 게임을 그만두세요.'; return; }
   playMode = null; paintMenu();
 };
-$('menuResume').onclick = () => { closeModals(); if (S.game) S.game.paused = false; };
+$('menuResume').onclick = () => { closeModals(); if (S.game) { S.game.paused = false; aiMaybeTurn(); } };
 $('btnMenu').onclick = openMenu;
 $('hudMenu').onclick = openMenu;
-$('hudQuit').onclick = () => { if (S.playing) return; if (S.game && !S.game.over) endGame(false, 'quit'); };
-$('endRetry').onclick = () => startGame(S.game ? S.game.table : lastGameTable, S.game ? S.game.level : lastGameLevel, S.game ? S.game.multi : lastGameMulti);
+$('hudQuit').onclick = () => {
+  if (S.playing) return;
+  const g = S.game; if (!g || g.over) return;
+  if (g.online) netSend({ t: 'resign' });
+  endGame(false, 'quit');
+};
+$('endRetry').onclick = () => {
+  if (S.game && S.game.ai) { aiStartGame(); return; }
+  startGame(S.game ? S.game.table : lastGameTable, S.game ? S.game.level : lastGameLevel, S.game ? S.game.multi : lastGameMulti);
+};
 $('endMenu').onclick = openMenu;
+function customCfg(t, o) {
+  const cl = (v, lo, hi, d) => Math.min(hi, Math.max(lo, Math.round(isFinite(+v) ? +v : d)));
+  return { nm: '', target: cl(o.target, 1, 30, 10), three: t === '4b' ? cl(o.three, 0, 2, 0) : 0, time: MULTI_TIME };
+}
+function cleanSettings(s) {
+  s = s || {};
+  const t = s.table === '4b' ? '4b' : '3c', c = customCfg('4b', s);
+  return { table: t, target: c.target, three: c.three };
+}
+function cleanName(n, d) { return String(n == null ? '' : n).replace(/\s+/g, ' ').trim().slice(0, 10) || d; }
+// 온라인·AI 대전에서 내 차례가 아니면 조작 잠금
+function netLocked() { const g = S.game; return !!(g && (g.online || g.ai) && !g.over && g.turn !== g.seat); }
+// 설정 칸(− 숫자 +) 공통 처리
+function bindStepper(root, get, set) {
+  root.querySelectorAll('.stepper button').forEach(b => b.onclick = () => { const k = b.dataset.k; set(k, get()[k] + +b.dataset.d); });
+  root.querySelectorAll('.stepper input').forEach(inp => inp.onchange = () => set(inp.dataset.k, +inp.value));
+}
+
+// ---------- 온라인 대전: PeerJS로 두 브라우저를 직접 연결 (방 코드 = 방장 주소) ----------
+const NET = { peer: null, conn: null, host: false, code: '', myName: '', oppName: '', settings: { table: '3c', target: 10, three: 0 }, queue: [], aimT: null };
+const PEER_PREFIX = 'dangudojeon-v1-';
+const CODE_CH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function netSend(m) { if (NET.conn && NET.conn.open) { try { NET.conn.send(m); } catch (e) {} } }
+function packBalls() { return S.balls.map(b => [b.x, b.y, b.q[0], b.q[1], b.q[2], b.q[3]]); }
+function unpackBalls(arr) {
+  if (!Array.isArray(arr) || arr.length !== S.balls.length) return;
+  S.balls.forEach((b, i) => {
+    const f = Array.isArray(arr[i]) ? arr[i].map(Number) : [];
+    if (f.length < 6 || !f.every(isFinite)) return;
+    b.x = f[0]; b.y = f[1]; b.q = f.slice(2, 6); b.vx = b.vy = b.wx = b.wy = b.wz = 0;
+  });
+}
+const numOr = (v, d) => (typeof v === 'number' && isFinite(v)) ? v : d;
+function applyAim(m) {
+  S.phi = numOr(m.phi, S.phi); S.a = numOr(m.a, S.a); S.b = numOr(m.b, S.b);
+  S.V = Math.min(6, Math.max(0.3, numOr(m.V, S.V))); S.elev = Math.min(75, Math.max(0, numOr(m.elev, S.elev)));
+}
+// 내 조준을 상대 화면에 보여 주기 (너무 자주 보내지 않게 살짝 모아서)
+function netAim() {
+  const g = S.game; if (!g || !g.online || g.turn !== g.seat || S.playing) return;
+  clearTimeout(NET.aimT);
+  NET.aimT = setTimeout(() => { const g2 = S.game; if (g2 && g2.online && g2.turn === g2.seat && !S.playing) netSend({ t: 'aim', phi: S.phi, a: S.a, b: S.b, V: S.V, elev: S.elev }); }, 60);
+}
+// 샷 결과(점수·공 위치·차례)는 친 사람 컴퓨터가 계산해서 보냄 → 두 화면이 항상 똑같음
+function netSendState() {
+  const g = S.game; if (!g || !g.online) return;
+  savePl(g);
+  netSend({ t: 'state', balls: packBalls(), turn: g.turn, pl: g.pl.map(p => { const o = {}; PL_KEYS.forEach(k => o[k] = p[k]); return o; }),
+    remain: g.remain, firstShot: g.firstShot, running: g.running, banks: g.banks, over: g.over, win: !!g.win, reason: g.reason || '',
+    endPhase: g.endPhase || '', tb: g.tb || null, tbRound: g.tbRound || 0, forceWinner: g.forceWinner === undefined ? -1 : g.forceWinner, endNote: g.endNote || '',
+    phi: S.phi, a: S.a, b: S.b, V: S.V, elev: S.elev,
+    res: $('res').textContent, resCls: $('res').className.replace(/^res ?/, ''), seq: $('seq').textContent });
+}
+function applyState(m) {
+  const g = S.game; if (!g || g.over) return;
+  const prevTurn = g.turn;
+  unpackBalls(m.balls);
+  if (Array.isArray(m.pl) && m.pl.length === 2) m.pl.forEach((p, i) => {
+    if (!p || typeof p !== 'object') return;
+    PL_KEYS.forEach(k => { g.pl[i][k] = k === 'phase' ? (p.phase === 'three' ? 'three' : 'normal') : Math.max(0, numOr(p[k], g.pl[i][k])); });
+  });
+  g.turn = m.turn === 1 ? 1 : 0; loadPl(g);
+  g.remain = numOr(m.remain, g.remain); g.firstShot = !!m.firstShot; g.running = !!m.running; g.banks = numOr(m.banks, g.banks);
+  g.endPhase = m.endPhase === 'last' || m.endPhase === 'tb' ? m.endPhase : null;
+  g.tb = Array.isArray(m.tb) ? [!!m.tb[0], !!m.tb[1]] : null; g.tbRound = numOr(m.tbRound, 0);
+  if (m.forceWinner === 0 || m.forceWinner === 1) g.forceWinner = m.forceWinner;
+  g.endNote = String(m.endNote || '').slice(0, 60);
+  applyAim(m); S.lastRes = null; S.predRes = null;
+  setStatus(String(m.res || ''), String(m.seq || ''), m.resCls === 'ok' || m.resCls === 'ng' ? m.resCls : '');
+  drawSpin(); updHud(); updReads(); draw();
+  if (m.over) { endGame(!!m.win, m.reason === 'time' ? 'time' : ''); return; }
+  if (g.turn !== prevTurn) toast(g.turn === g.seat ? '내 차례!' : plName(g.turn) + ' 차례!');
+}
+function netHandle(m) {
+  const g = S.game; if (!g || !g.online) return;
+  if (m.t === 'aim') { if (g.turn !== g.seat) { applyAim(m); drawSpin(); updReads(); draw(); } }
+  else if (m.t === 'shot') {
+    if (g.over) return;
+    unpackBalls(m.balls); S.cue = m.cue === 1 ? 1 : 0; applyAim(m); S.lastRes = null; drawSpin(); updReads();
+    const res = runShot(true);
+    S.playing = { res, t: 0, last: performance.now(), speed: +$('speed').value, remote: true };
+    setStatus('…', plName(g.turn) + ' 샷'); requestAnimationFrame(tick);
+  }
+  else if (m.t === 'break') { if (g.table === '4b') doBreak(m.msg ? String(m.msg) : undefined, numOr(m.seed, 1) >>> 0); }
+  else if (m.t === 'state') applyState(m);
+}
+// 상대 샷 애니메이션이 끝난 뒤 다음 메시지를 차례대로 처리
+function netPump() { while (NET.queue.length && !S.playing) netHandle(NET.queue.shift()); }
+function netOnData(m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.t === 'hello') { if (NET.host) { NET.oppName = cleanName(m.name, '참가자'); netSendLobby(); onMsg(NET.oppName + ' 님이 들어왔어요. [게임 시작]을 누르세요!'); paintOnline(); } }
+  else if (m.t === 'lobby') { if (!NET.host) { NET.oppName = cleanName(m.name, '방장'); NET.settings = cleanSettings(m.settings); onMsg('방장이 게임을 시작하면 바로 시작돼요.'); paintOnline(); } }
+  else if (m.t === 'start') { if (!NET.host) { NET.settings = cleanSettings(m.settings); onlineStart(); } }
+  else if (m.t === 'full') { onMsg('방이 꽉 찼어요 (2명까지).', true); netClose(); paintOnline(); }
+  else if (m.t === 'resign') { const g = S.game; if (g && g.online && !g.over) { g.leftWinner = g.seat; S.playing = null; endGame(false, 'quit'); } }
+  else if (m.t === 'leave') netOppLeft();
+  else { NET.queue.push(m); netPump(); }
+}
+function netOppLeft() {
+  const g = S.game;
+  if (g && g.online && !g.over) { g.leftWinner = g.seat; S.playing = null; endGame(false, 'left'); }
+  if (NET.host) { NET.conn = null; NET.oppName = ''; if (NET.peer) onMsg('상대가 나갔어요. 새 친구를 기다리는 중…', true); }
+  else if (NET.peer) { netClose(); onMsg('방장이 방을 나갔어요.', true); }
+  paintOnline();
+}
+function netBind(c) {
+  NET.conn = c;
+  c.on('open', () => { if (NET.conn !== c) return; if (!NET.host) c.send({ t: 'hello', name: NET.myName }); paintOnline(); });
+  c.on('data', m => { if (NET.conn === c) netOnData(m); });
+  c.on('close', () => { if (NET.conn === c) netOppLeft(); });
+  c.on('error', () => {});
+}
+function netClose() {
+  const p = NET.peer, c = NET.conn;
+  NET.peer = null; NET.conn = null; NET.oppName = ''; NET.code = ''; NET.queue = [];
+  if (c) { try { if (c.open) c.send({ t: 'leave' }); } catch (e) {} setTimeout(() => { try { c.close(); } catch (e) {} }, 200); }
+  if (p) setTimeout(() => { try { p.destroy(); } catch (e) {} }, 300);
+}
+function loadPeer(cb) {
+  if (window.Peer) { cb(); return; }
+  onMsg('연결 준비 중…');
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+  s.onload = cb; s.onerror = () => onMsg('연결 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', true);
+  document.head.appendChild(s);
+}
+function onMsg(t, bad) { $('onMsg').textContent = t || ''; $('onMsg').classList.toggle('bad', !!bad); }
+function readMyName(d) {
+  const n = cleanName($('onName').value, d);
+  try { localStorage.setItem('carom_name', n); } catch (e) {}
+  return n;
+}
+function onCreate() {
+  NET.myName = readMyName('방장');
+  loadPeer(() => {
+    netClose(); NET.host = true;
+    let code = ''; for (let i = 0; i < 5; i++) code += CODE_CH[Math.floor(Math.random() * CODE_CH.length)];
+    NET.code = code;
+    const peer = NET.peer = new window.Peer(PEER_PREFIX + code);
+    onMsg('방 만드는 중…');
+    peer.on('open', () => { if (NET.peer !== peer) return; NET.code = code; onMsg('친구에게 방 코드를 알려 주세요. 친구가 들어오면 [게임 시작]을 누르세요.'); paintOnline(); });
+    peer.on('connection', c => {
+      if (NET.peer !== peer) return;
+      if (NET.conn && NET.conn.open) { c.on('open', () => { c.send({ t: 'full' }); setTimeout(() => c.close(), 300); }); return; }
+      netBind(c);
+    });
+    peer.on('error', e => {
+      if (NET.peer !== peer) return;
+      if (e.type === 'unavailable-id') { onCreate(); return; }
+      onMsg('연결 오류가 났어요 (' + (e.type || '알 수 없음') + '). 다시 시도해 주세요.', true);
+    });
+    peer.on('disconnected', () => { if (NET.peer === peer) { try { peer.reconnect(); } catch (e) {} } });
+  });
+}
+function onJoin() {
+  const code = $('onCode').value.trim().toUpperCase();
+  if (!/^[A-Z0-9]{5}$/.test(code)) { onMsg('방 코드 5자리를 입력해 주세요.', true); return; }
+  NET.myName = readMyName('참가자');
+  loadPeer(() => {
+    netClose(); NET.host = false;
+    const peer = NET.peer = new window.Peer();
+    NET.code = code;
+    onMsg('방 찾는 중…');
+    peer.on('open', () => { if (NET.peer !== peer) return; netBind(peer.connect(PEER_PREFIX + code, { reliable: true })); });
+    peer.on('error', e => {
+      if (NET.peer !== peer) return;
+      onMsg(e.type === 'peer-unavailable' ? '그 코드의 방을 찾을 수 없어요. 코드를 다시 확인해 주세요.' : '연결 오류가 났어요 (' + (e.type || '알 수 없음') + ').', true);
+      netClose(); paintOnline();
+    });
+  });
+}
+function netSendLobby() { if (NET.host) netSend({ t: 'lobby', name: NET.myName, settings: NET.settings }); }
+function onlineStart() {
+  const s = NET.settings, names = NET.host ? [NET.myName, NET.oppName || '참가자'] : [NET.oppName || '방장', NET.myName];
+  playMode = 'online';
+  startGame(s.table, 0, true, { kind: 'online', target: s.target, three: s.three, names, seat: NET.host ? 0 : 1 });
+  toast(NET.host ? '게임 시작! 내 차례' : '게임 시작! 방장 차례');
+}
+function paintOnline() {
+  const connected = !!(NET.conn && NET.conn.open);
+  const inRoom = !!NET.peer && (NET.host ? NET.peer.open : connected);
+  $('onLobby').style.display = inRoom ? 'none' : '';
+  $('onRoom').style.display = inRoom ? '' : 'none';
+  $('onCodeShow').textContent = NET.code;
+  const opp = connected && NET.oppName;
+  const ppl = $('onPeople'); ppl.innerHTML = '';
+  [['⚪ 방장 · ', NET.host ? NET.myName + ' (나)' : (NET.oppName || '방장')],
+   ['🟡 참가자 · ', NET.host ? (opp ? NET.oppName : '') : NET.myName + ' (나)']].forEach(([k, v]) => {
+    const d = document.createElement('div'); d.textContent = k + (v || '기다리는 중…'); if (!v) d.className = 'wait'; ppl.appendChild(d);
+  });
+  const s = NET.settings;
+  document.querySelectorAll('#onTable button').forEach(b => b.classList.toggle('on', b.dataset.t === s.table));
+  $('onTarget').value = s.target; $('onThree').value = s.three;
+  $('onThreeRow').style.display = s.table === '4b' ? '' : 'none';
+  $('onSettings').classList.toggle('locked', !NET.host);
+  $('onSetTitle').textContent = NET.host ? '게임 설정 — 방장인 내가 정해요' : '게임 설정 — 방장이 정해요';
+  const playing = S.game && S.game.online && !S.game.over;
+  $('onStart').style.display = NET.host ? '' : 'none';
+  $('onStart').disabled = !opp || playing;
+  $('onStart').textContent = playing ? '게임 중' : opp ? '게임 시작' : '친구를 기다리는 중…';
+}
+function setOnline(k, v) { if (!NET.host) return; NET.settings = cleanSettings(Object.assign({}, NET.settings, { [k]: v })); netSendLobby(); paintOnline(); }
+document.querySelectorAll('#onTable button').forEach(b => b.onclick = () => setOnline('table', b.dataset.t));
+bindStepper($('onSettings'), () => NET.settings, setOnline);
+$('onCreate').onclick = onCreate;
+$('onJoin').onclick = onJoin;
+$('onCode').addEventListener('keydown', e => { if (e.key === 'Enter') onJoin(); });
+$('onStart').onclick = () => { if (!NET.host || !(NET.conn && NET.conn.open)) return; netSend({ t: 'start', settings: NET.settings }); onlineStart(); };
+$('onCopy').onclick = () => { try { navigator.clipboard.writeText(NET.code); onMsg('방 코드를 복사했어요: ' + NET.code); } catch (e) {} };
+$('onLeave').onclick = () => {
+  const g = S.game;
+  if (g && g.online && !g.over) { netSend({ t: 'resign' }); endGame(false, 'quit'); $('endModal').style.display = 'none'; }
+  netClose(); onMsg('방에서 나왔어요.'); paintOnline();
+};
+$('onBack').onclick = () => {
+  if (S.game && S.game.online && !S.game.over) { onMsg('게임 중에는 나갈 수 없어요 — 먼저 [방 나가기]나 [그만]을 누르세요.', true); return; }
+  netClose(); onMsg(''); playMode = null; paintMenu();
+};
+try { $('onName').value = localStorage.getItem('carom_name') || ''; $('aiName').value = $('onName').value; } catch (e) {}
+
+// ---------- 컴퓨터(AI) 대전 ----------
+// AI는 매 샷마다 수천 가지 (방향 × 세기 × 당점)을 물리 엔진으로 미리 쳐 보고,
+// 득점하는 길 중에서 조준이 조금 틀려도 들어가는 '가장 확실한 샷'을 골라 정확하게 쳐요.
+const AI = { token: 0, busy: false, settings: { table: '3c', target: 10, three: 0 } };
+// AI와 나의 차이를 숫자로 보여 주기
+function aiGapHtml(g) {
+  const st = g.aiStats, pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+  return '🤖 AI가 지금까지 미리 쳐 본 샷 <b>' + st.sims.toLocaleString() + '가지</b> · AI 성공률 <b>' + pct(st.aiOk, st.aiShots) + '</b> (' + st.aiOk + '/' + st.aiShots + ')' +
+    ' vs 내 성공률 <b>' + pct(st.myOk, st.myShots) + '</b> (' + st.myOk + '/' + st.myShots + ')';
+}
+function aiStop() { AI.token++; AI.busy = false; S.aiPreview = null; }
+function aiMaybeTurn() {
+  const g = S.game;
+  if (!g || !g.ai || g.over || g.turn === g.seat || S.playing || AI.busy) return;
+  AI.busy = true; const tok = ++AI.token;
+  setTimeout(() => aiThink(tok), 1400);   // 방금 친 결과를 잠깐 읽을 시간
+}
+async function aiThink(tok) {
+  const g = S.game;
+  if (tok !== AI.token || !g || g.over) return;
+  if (g.paused || !g.running || S.playing) { setTimeout(() => aiThink(tok), 300); return; }
+  const kind = g.table === '3c' ? '3c' : g.phase === 'three' ? 'three' : '4b';
+  const me = g.pl[g.seat];
+  const out = await solveShot({ balls: C.cloneBalls(S.balls), cue: S.cue, kind, firstShot: g.firstShot, minT: 2500, maxT: 7000, look: 6, defense: true,
+    nextKind: () => kind === '4b' && g.threeNeed > 0 && g.score + 1 >= g.target ? 'three' : kind,
+    oppKind: g.table === '3c' ? '3c' : me.phase === 'three' ? 'three' : '4b',
+    alive: () => tok === AI.token && S.game === g && !g.over,
+    progress: (st, i) => setStatus('🤖 AI 생각 중… ' + st, i.sims.toLocaleString() + '가지 샷을 미리 쳐 봄 · 득점 경로 ' + i.routes + '개') });
+  if (!out || tok !== AI.token || S.game !== g || g.over) return;
+  g.aiStats.sims += out.info.sims;
+  aiExecute(tok, out);
+}
+function aiExecute(tok, out) {
+  const g = S.game;
+  if (tok !== AI.token || !g || g.over) return;
+  S.phi = out.best.c[0]; S.V = out.best.c[1]; S.a = out.best.c[2]; S.b = out.best.c[3]; S.elev = 0;
+  drawSpin(); updReads();
+  S.aiPreview = runShot(true);
+  const [t, d] = describeShot(out);
+  setStatus('🤖 AI: ' + t, d, out.best.ok ? 'ok' : '');
+  draw();
+  const go = () => {
+    if (tok !== AI.token || !S.game || S.game.over) return;
+    if (S.game.paused) { setTimeout(go, 300); return; }
+    S.aiPreview = null; AI.busy = false;
+    shoot(true);
+  };
+  setTimeout(go, 1600);
+}
+function paintAi() {
+  const s = AI.settings;
+  document.querySelectorAll('#aiTable button').forEach(b => b.classList.toggle('on', b.dataset.t === s.table));
+  $('aiTarget').value = s.target; $('aiThree').value = s.three;
+  $('aiThreeRow').style.display = s.table === '4b' ? '' : 'none';
+}
+function setAi(k, v) { AI.settings = cleanSettings(Object.assign({}, AI.settings, { [k]: v })); paintAi(); }
+document.querySelectorAll('#aiTable button').forEach(b => b.onclick = () => setAi('table', b.dataset.t));
+bindStepper($('aiView'), () => AI.settings, setAi);
+function aiStartGame() {
+  const s = AI.settings, me = cleanName($('aiName').value, '나');
+  try { localStorage.setItem('carom_name', me); } catch (e) {}
+  playMode = 'ai';
+  startGame(s.table, 0, true, { kind: 'ai', target: s.target, three: s.three, names: [me, '🤖 AI'], seat: 0 });
+}
+$('aiStart').onclick = aiStartGame;
+$('aiBack').onclick = () => { if (S.game && S.game.ai && !S.game.over) { $('menuSub').textContent = '게임 중에는 방식을 못 바꿔요 — 먼저 게임을 그만두세요.'; return; } playMode = null; paintMenu(); };
 
 
 
@@ -2077,7 +2611,7 @@ const AIM_KEYS = { KeyQ: 1, KeyW: 0.1, KeyE: 0.02, KeyR: -0.02, KeyT: -0.1, KeyY
 const POW_KEYS = { KeyA: -0.5, KeyS: -0.05, KeyD: 0.05, KeyF: 0.5 };
 let toastT = null;
 function toast(msg) { const t = $('keyToast'); t.textContent = msg; t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = 0, 700); }
-function canControl() { return !S.playing && !(S.game && (S.game.over || S.game.paused)); }
+function canControl() { return !S.playing && !(S.game && (S.game.over || S.game.paused)) && !netLocked(); }
 document.addEventListener('keydown', e => {
   if ($('keyModal').style.display === 'flex') { if (e.code === 'Escape' || e.code === 'Enter') { e.preventDefault(); $('keyModal').style.display = 'none'; } return; }
   if ($('menuModal').style.display === 'flex' || $('endModal').style.display === 'flex') return;
@@ -2085,6 +2619,7 @@ document.addEventListener('keydown', e => {
   if (tg && (tg.tagName === 'INPUT' && tg.type !== 'range' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT')) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const c = e.code;
+  if (netLocked()) return;   // 상대(또는 AI) 차례에는 조작 불가
   let handled = true;
   if (c in AIM_KEYS) {
     if (!canControl()) return;
@@ -2114,7 +2649,7 @@ $('btnKeys').onclick = $('hudKeys').onclick = $('menuKeys').onclick = () => { $(
 $('keyClose').onclick = () => { $('keyModal').style.display = 'none'; };
 $('keyModal').addEventListener('click', e => { if (e.target.id === 'keyModal') $('keyModal').style.display = 'none'; });
 
-window.__sim = { S, schedulePred, startGame, startPractice, evalShot };
+window.__sim = { S, schedulePred, startGame, startPractice, evalShot, gameAfterShot };
 setMode('3c');
 playIntro(0);
 })();
