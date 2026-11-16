@@ -164,6 +164,11 @@ body:not(.ingame) .game-only{display:none !important}
 .sbp .arrow{visibility:hidden;font-size:11px}
 .sbp.on .arrow{visibility:visible}
 .sbp small{font-size:11px;color:var(--mute);font-weight:600}
+/* 목표 점수를 다 친 사람: 점수에 가로선, 쓰리쿠 강조 */
+.roll.done{opacity:.75}
+.roll.done::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:2px;margin-top:-1px;background:currentColor;border-radius:2px}
+.sbp small.three-on{font-size:13px;font-weight:900;color:#1a1a1a;background:var(--accent);padding:1px 8px;border-radius:999px;opacity:1}
+.sbp:not(.on) small.three-on{filter:saturate(.7)}
 .sbt{padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:12px;color:var(--mute);font-weight:700;white-space:nowrap}
 .roll{position:relative;display:inline-block;height:1.3em;min-width:2.2ch;overflow:hidden;vertical-align:middle;font-size:18px;font-weight:900;color:var(--text)}
 .roll .rv{position:absolute;left:0;right:0;top:0;line-height:1.3em;text-align:center}
@@ -422,7 +427,7 @@ kbd{border-radius:8px}
       <div class="note">
         <p><b>3구 (3쿠션, 대대)</b> — 흰 공(수구)으로 노란 공과 빨간 공을 모두 맞혀요. 두 번째 공을 맞히기 전까지 쿠션에 <b>3번 이상</b> 닿아야 1점. 초구는 빨간 공을 먼저 맞혀야 해요. 난이도별로 <b>5분 안에 3점 / 5점 / 10점</b>을 내면 클리어.</p>
         <p><b>4구 (중대)</b> — 흰 공으로 빨간 공 2개를 모두 맞히면 1점. 쿠션은 상관없어요. 노란 공(상대 공)을 맞히거나 아무 공도 못 맞히면 <b>−1점</b>. 공 4개를 깨고 시작해요.</p>
-        <p><b>4구 난이도</b> — 쉬움 5점 · 보통 7점 + 쓰리쿠 1개 · 어려움 10점 + 쓰리쿠 2개, 모두 <b>5분</b> 안에. 목표 점수를 채우면 <b>쓰리쿠</b>로 마무리해요. 아무 공 2개를 맞히되 두 번째 공 전에 쿠션 3번 이상이고, 이때는 노란 공을 맞혀도 돼요.</p>
+        <p><b>4구 난이도</b> — 쉬움 5점 · 보통 7점 + 쓰리쿠 1개 · 어려움 10점 + 쓰리쿠 2개, 모두 <b>5분</b> 안에. 목표 점수를 채우면 <b>쓰리쿠</b>로 마무리해요. <b>빨간 공 2개</b>를 맞히되 두 번째 빨간 공 전에 쿠션 3번 이상이어야 해요. 상대 공을 맞히면 파울이지만, 쓰리쿠 단계에서는 <b>감점 없이</b> 실패(멀티에서는 차례 넘김)만 돼요.</p>
         <p><b>뱅크샷 (3구)</b> — 수구가 첫 번째 공보다 <b>쿠션을 먼저</b> 맞고 득점하면 <b>2점</b>이에요.</p>
         <p>공이 수구에 붙으면 3구는 초구 배치로, 4구는 다시 깨서 이어가요.</p>
         <p><b>멀티 플레이</b> — 2명이 번갈아 쳐요. 1번은 흰 공, 2번은 노란 공이 내 공(수구)이에요. 제한 시간 <b>20분</b>, 목표 점수는 개인 플레이의 <b>2배</b>(쓰리쿠 개수는 그대로)예요. 대회 규칙처럼 <b>득점하면 계속 치고</b>, 못 치거나 감점(−1점)이 되면 <b>상대 차례</b>로 넘어가요. 4구에서는 상대의 공을 맞히면 감점이에요. 시간이 끝나면 점수가 높은 사람이 이겨요.</p>
@@ -1433,7 +1438,7 @@ function shotJudge(kind, cue, firstShot) {
 }
 function shotCands(balls, cue, kind, dense) {
   const R = S.p.R, cb = balls[cue], need2 = kind !== '4b';
-  const targets = need2 ? balls.map((b, i) => i).filter(i => i !== cue) : [2, 3];
+  const targets = kind === '3c' ? balls.map((b, i) => i).filter(i => i !== cue) : [2, 3];   // 4구는 빨간 공만
   const Vs = kind === '3c' ? [2.0, 2.6, 3.2, 3.8, 4.4] : kind === 'three' ? [2.2, 2.8, 3.4, 4.0] : [0.45, 0.6, 0.8, 1.0, 1.3, 1.7, 2.2, 2.8];
   const As = need2 ? [-0.4, -0.2, 0, 0.2, 0.4] : [-0.3, 0, 0.3];
   const Bs = need2 ? [-0.3, 0, 0.3] : [-0.5, -0.25, 0, 0.3];
@@ -1449,7 +1454,7 @@ function shotCands(balls, cue, kind, dense) {
 }
 function freshBalls(balls) { const bs = C.cloneBalls(balls); bs.forEach(b => { b.vx = b.vy = b.wx = b.wy = b.wz = 0; }); return bs; }
 function makeTrier(balls, cue, judge, need2) {
-  const stopWhen = (events, bs) => { const b = bs[cue]; if (!(b.vx || b.vy || b.wx || b.wy)) return true; const e = judge(events); return need2 ? e.hit.length >= 2 : e.foul; };
+  const stopWhen = (events, bs) => { const b = bs[cue]; if (!(b.vx || b.vy || b.wx || b.wy)) return true; const e = judge(events); return e.foul || (need2 && e.hit.length >= 2); };
   return c => { const bs = freshBalls(balls); C.strike(bs[cue], S.p, c[0], c[1], c[2], c[3], 0); return judge(C.simulate(bs, S.p, S.T, { stopWhen }).events); };
 }
 function finalBalls(balls, cue, c) { const bs = freshBalls(balls); C.strike(bs[cue], S.p, c[0], c[1], c[2], c[3], 0); return C.simulate(bs, S.p, S.T, {}).balls; }
@@ -1475,6 +1480,7 @@ async function solveShot(o) {
   const tryShot = makeTrier(balls, cue, shotJudge(kind, cue, o.firstShot), need2);
   const rate = e => {
     if (e.ok) { const bank = is3 && e.seq.length > 0 && e.seq[0].t === 'c'; return { ok: true, bank, q: 1000 + (bank ? 150 : 0) }; }
+    if (kind === 'three' && e.foul) return { ok: false, q: 0 };
     if (need2) return { ok: false, q: e.hit.length * 10 + Math.min(e.cushions || 0, 3) * 3 };
     if (e.foul || e.hit.length === 0) return { ok: false, q: -50 };
     return { ok: false, q: 10 };
@@ -1788,16 +1794,18 @@ function cueSeq(events, cue) {
   }
   return seq;
 }
-// 4구 마무리 쓰리쿠: 아무 공 2개 + 두 번째 공 전에 쿠션 3개 이상 (노란 공 맞혀도 됨)
+// 4구 마무리 쓰리쿠: 빨간 공(적구) 2개 + 두 번째 빨간 공 전에 쿠션 3개 이상
+// 상대 공을 한 번이라도 맞히면 파울 (쓰리쿠 단계에서는 감점 없이 차례만 넘어감)
 function evalThree4(events, cue) {
-  const seq = cueSeq(events, cue), hit = []; let c = 0;
+  const seq = cueSeq(events, cue), opp = cue === 0 ? 1 : 0, hit = []; let c = 0;
+  const foul = seq.some(s => s.t === 'b' && s.id === opp);
   for (const s of seq) {
     if (s.t === 'c') { if (hit.length < 2) c++; }
-    else if (!hit.includes(s.id)) { hit.push(s.id); if (hit.length === 2) break; }
+    else if (s.id !== opp && !hit.includes(s.id)) { hit.push(s.id); if (hit.length === 2) break; }
   }
-  const ok = hit.length === 2 && c >= 3;
-  const msg = ok ? '쓰리쿠 성공!' : hit.length === 0 ? '헛맞음' : hit.length === 1 ? '두 번째 공 미스' : '쿠션 부족 (' + c + '쿠션)';
-  return { ok, msg, cushions: c, hit, seq };
+  const ok = !foul && hit.length === 2 && c >= 3;
+  const msg = ok ? '쓰리쿠 성공!' : foul ? '파울 (상대 공 접촉)' : hit.length === 0 ? '헛맞음' : hit.length === 1 ? '두 번째 빨간 공 미스' : '쿠션 부족 (' + c + '쿠션)';
+  return { ok, msg, cushions: c, hit, seq, foul };
 }
 // 현재 게임 상황에 맞는 판정
 function evalShot(events) {
@@ -1877,7 +1885,11 @@ function updHud() {
   $('hudMode').textContent = g.online ? '🌐 온라인 · ' + GAME_CFG[g.table].name : g.ai ? '🤖 AI 대전 · ' + GAME_CFG[g.table].name :
     (g.multi ? '👥 ' : '') + GAME_CFG[g.table].name + ' · ' + GAME_CFG[g.table].levels[g.level].nm;
   if (g.multi) { savePl(g); paintBoard(g); }
-  else { $('hudScore')._g = null; $('hudScore').textContent = g.score + ' / ' + g.target; }
+  else {
+    $('hudScore')._g = null; $('hudScore').textContent = g.score + ' / ' + g.target;
+    $('hudScore').style.textDecoration = g.phase === 'three' ? 'line-through' : '';
+  }
+  announceThree(g);
   const w = $('hudThreeWrap');
   w.style.display = g.threeNeed > 0 ? '' : 'none';
   w.classList.toggle('on', g.phase === 'three');
@@ -1888,7 +1900,7 @@ function updHud() {
   const opp = oppBallName(), win = g.multi ? '승리!' : '클리어!';
   if (g.table === '3c') rule = '<b>3쿠션</b> — ' + opp + '과 빨간 공을 모두 맞히되, <b>두 번째 공 전에 쿠션 3개 이상</b>. 쿠션을 먼저 맞히는 <b>뱅크샷은 2점</b>.' + (g.firstShot ? ' 지금은 초구라서 <b>빨간 공을 먼저</b> 맞혀야 해요.' : '');
   else if (g.phase === 'normal') rule = '<b>4구</b> — 빨간 공 2개를 모두 맞히면 +1점. <b>' + opp + ' 접촉 · 헛맞음은 −1점</b>. ' + g.target + '점을 채우면 ' + (g.threeNeed ? '마무리 쓰리쿠 ' + g.threeNeed + '개로 넘어가요.' : win);
-  else rule = '<b>마무리 쓰리쿠</b> — 아무 공 2개를 맞히되 <b>두 번째 공 전에 쿠션 3개 이상</b> (' + opp + ' 맞혀도 돼요). ' + g.threeNeed + '번 성공하면 ' + win;
+  else rule = '<b>마무리 쓰리쿠</b> — <b>빨간 공 2개</b>를 맞히되 <b>두 번째 빨간 공 전에 쿠션 3개 이상</b>. <b>' + opp + '을 맞히면 파울</b> (감점 없이 실패). ' + g.threeNeed + '번 성공하면 ' + win;
   if (g.online || g.ai) rule = (g.turn === g.seat ? '<b style="color:var(--accent)">내 차례 · 내 공은 ' + ballName(g.seat) + '</b>'
       : '<b style="color:var(--accent)">' + plName(g.turn).replace(/</g, '&lt;') + ' 차례</b> — ' + (g.ai ? 'AI가 치는 걸 지켜보세요' : '상대가 치는 걸 지켜보세요')) + ' · 득점하면 계속, 못 치면 상대 차례. ' + rule;
   else if (g.multi) rule = '<b style="color:var(--accent)">' + plName(g.turn).replace(/</g, '&lt;') + ' 차례 · 내 공은 ' + ballName(S.cue) + '</b> — 득점하면 계속, 못 치면 상대 차례. ' + rule;
@@ -1920,7 +1932,10 @@ function paintBoard(g) {
   g.pl.forEach((p, i) => {
     box._side[i].classList.toggle('on', i === g.turn);
     box._name[i].textContent = i === 0 ? '⚪ ' + p.name : p.name + ' 🟡';
-    box._three[i].textContent = g.threeNeed ? '(쓰리쿠 ' + p.three + ')' : '';
+    const inThree = g.threeNeed > 0 && p.phase === 'three';
+    box._three[i].textContent = !g.threeNeed ? '' : inThree ? '쓰리쿠 ' + p.three + '/' + g.threeNeed : '(쓰리쿠 ' + p.three + ')';
+    box._three[i].classList.toggle('three-on', inThree);
+    box._roll[i].classList.toggle('done', inThree);
     const hold = box._hold && box._hold[i];
     if (hold !== undefined && hold !== null && p.score === hold) return;   // 아직 실제 점수 반영 전
     if (box._hold) box._hold[i] = null;
@@ -1943,11 +1958,26 @@ function setRoll(i, v) {
   } else if (old) old.remove();
 }
 // 온라인 대전: 득점·감점 글자를 1초 띄우기 (흰 공=흰색, 노란 공=노란색, 감점=빨간색)
-function popScore(text, color) {
+function popScore(text, color, ms) {
   const el = $('scorePop');
-  el.textContent = text; el.style.color = color;
+  el.textContent = text; el.style.color = color; el.style.fontSize = ms ? '22px' : '';
   if (el.animate) el.animate([{ opacity: 0, transform: 'translate(-50%, 8px)' }, { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.15 },
-    { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.8 }, { opacity: 0, transform: 'translate(-50%, -6px)' }], { duration: 1000, easing: 'ease-out' });
+    { opacity: 1, transform: 'translate(-50%, 0)', offset: 0.8 }, { opacity: 0, transform: 'translate(-50%, -6px)' }], { duration: ms || 1000, easing: 'ease-out' });
+}
+// 4구에서 목표 점수를 처음 다 쳤을 때(쓰리쿠 단계 진입) 한 번 알려 주기
+function announceThree(g) {
+  if (!g.threeNeed) return;
+  g._threeSeen = g._threeSeen || [false, false];
+  const list = g.multi ? g.pl.map((p, i) => [i, p.phase]) : [[0, g.phase]];
+  for (const [i, ph] of list) {
+    if (ph !== 'three' || g._threeSeen[i]) continue;
+    g._threeSeen[i] = true;
+    const who = g.multi ? plName(i) + ' ' : '';
+    setTimeout(() => {
+      if (S.game !== g || g.over) return;
+      popScore('🎯 ' + who + '목표 점수 달성! 이제 쓰리쿠 ' + g.threeNeed + '개', g.multi && g.pl[i].ball === 1 ? '#f5c542' : '#ffffff', 2500);
+    }, 1050);   // 방금 뜬 점수 글자(1초)가 사라진 뒤
+  }
 }
 // 점수가 확정되는 순간 계산 (온라인 대전)
 // 3구·쓰리쿠: 득점이 인정되는 순간(두 번째 공에 맞는 순간) / 4구 득점·헛맞음: 공이 모두 멈췄을 때 / 4구 상대 공 접촉: 맞는 순간
@@ -2000,7 +2030,8 @@ function gameAfterShot(res) {
     } else { g.fails++; note = '빨간 공 1개만 (점수 그대로)'; }
     if (g.score >= g.target && g.threeNeed > 0) { g.phase = 'three'; note += ' · ' + g.target + '점 달성! 이제 쓰리쿠 ' + g.threeNeed + '개로 마무리'; }
   } else {
-    if (ev.ok) { g.three++; note = '쓰리쿠 성공 ' + g.three + '/' + g.threeNeed; } else { g.fails++; note = '쓰리쿠 실패'; }
+    if (ev.ok) { g.three++; note = '쓰리쿠 성공 ' + g.three + '/' + g.threeNeed; }
+    else { g.fails++; if (ev.foul) g.fouls++; note = ev.foul ? '쓰리쿠 실패 — ' + oppBallName() + ' 접촉 파울 (감점 없음)' : '쓰리쿠 실패'; }
   }
   let won = g.table === '3c' ? g.score >= g.target : g.phase === 'three' ? g.three >= g.threeNeed : (g.threeNeed === 0 && g.score >= g.target);
   // 멀티: 득점하면 계속, 못 치거나 감점이면 상대 차례 (대회 규칙)
