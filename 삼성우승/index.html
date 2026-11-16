@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 삼성 라이온즈 우승</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #074ca1;
+    --blue-dark: #04306a;
+    --sky: #4ea3ff;
+    --gold: #f5c542;
+    --red: #d94848;
+    --bg: #f4f7fc;
+    --card: #ffffff;
+    --line: #dbe4f2;
+    --text: #13213a;
+    --muted: #5b6b85;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  section { padding: 64px 16px; scroll-margin-top: 56px; }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h2 {
+    font-family: "Black Han Sans", sans-serif;
+    font-size: clamp(28px, 5vw, 40px);
+    color: var(--blue);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .sub { text-align: center; color: var(--muted); margin-bottom: 28px; }
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(7,76,161,.08);
+  }
+
+  /* ===== 위쪽 메뉴 ===== */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(4,48,106,.95);
+    backdrop-filter: blur(6px);
+  }
+  nav .wrap {
+    display: flex; gap: 4px;
+    overflow-x: auto;
+    padding: 0 8px;
+  }
+  nav a {
+    color: #dfeaff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 12px;
+    white-space: nowrap;
+  }
+  nav a:hover { color: var(--gold); }
+
+  /* ===== 맨 위 큰 화면 ===== */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 88vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding: 40px 16px;
+    background: radial-gradient(circle at 50% 30%, var(--sky), var(--blue) 45%, var(--blue-dark));
+  }
+  .hero .year { font-size: 18px; letter-spacing: 6px; opacity: .85; }
+  .hero h1 {
+    font-family: "Black Han Sans", sans-serif;
+    font-size: clamp(44px, 11vw, 110px);
+    line-height: 1.1;
+    margin: 12px 0;
+    text-shadow: 0 6px 24px rgba(0,0,0,.3);
+  }
+  .hero h1 .gold { color: var(--gold); }
+  .hero p { font-size: clamp(16px, 3vw, 22px); opacity: .95; }
+  .trophy {
+    font-size: clamp(70px, 14vw, 120px);
+    animation: bounce 2s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  #confetti {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* ===== 서비스 기능 Bento Grid ===== */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .bento .big { grid-column: span 2; grid-row: span 2; }
+
+  /* 큰 카드 */
+  .feature.big {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    min-height: 340px;
+  }
+  .feature.big .icon { width: 72px; height: 72px; font-size: 38px; }
+  .feature.big h3 { font-size: 28px; }
+  .feature.big p { font-size: 16px; }
+  .feature.big .go { margin-top: auto; padding-top: 18px; }
+  .feature.games {
+    background: linear-gradient(145deg, var(--blue), var(--blue-dark));
+    color: #fff;
+  }
+  .feature.games h3, .feature.games .go { color: #fff; }
+  .feature.games p { color: #cfe0ff; }
+  .feature.games .icon { background: rgba(255,255,255,.15); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .chips span {
+    font-size: 14px; font-weight: 700;
+    padding: 6px 12px; border-radius: 10px;
+    background: rgba(255,255,255,.12);
+  }
+  .chips span.win { background: var(--gold); color: #3a2a00; }
+  .preview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .preview div { background: var(--bg); border-radius: 12px; padding: 12px 6px; text-align: center; }
+  .preview b { display: block; font-family: "Black Han Sans", sans-serif; font-size: 26px; color: var(--blue); }
+  .preview small { color: var(--muted); font-weight: 700; }
+
+  /* 태블릿: 2열 */
+  @media (max-width: 860px) {
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .bento .big { grid-row: auto; }
+  }
+  /* 모바일: 1열 */
+  @media (max-width: 600px) {
+    .bento { grid-template-columns: 1fr; gap: 14px; }
+    .bento .big { grid-column: auto; }
+    .feature.big { min-height: 0; }
+  }
+
+  .feature {
+    display: block;
+    padding: 28px 24px;
+    text-decoration: none;
+    color: var(--text);
+    border: 2px solid transparent;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .feature:hover,
+  .feature:focus-visible {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 36px rgba(7,76,161,.18);
+    border-color: var(--sky);
+    outline: none;
+  }
+  .feature .icon {
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    background: #e6efff;
+    margin-bottom: 16px;
+    transition: transform .25s ease;
+  }
+  .feature:hover .icon { transform: scale(1.1) rotate(-6deg); }
+  .feature h3 { font-size: 20px; color: var(--blue); margin-bottom: 6px; }
+  .feature p { font-size: 15px; color: var(--muted); }
+  .feature .go { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 700; color: var(--blue); }
+  @media (prefers-reduced-motion: reduce) {
+    .feature, .feature .icon { transition: none; }
+    .feature:hover { transform: none; }
+    .feature:hover .icon { transform: none; }
+  }
+
+  /* ===== 숫자 카드 ===== */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .stat { padding: 28px 16px; text-align: center; border-top: 6px solid var(--blue); }
+  .stat .num { font-family: "Black Han Sans", sans-serif; font-size: 44px; color: var(--blue); }
+  .stat .label { color: var(--muted); font-weight: 700; }
+
+  /* ===== 포스트시즌 여정 ===== */
+  .road {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .step { padding: 24px; position: relative; }
+  .step .tag {
+    display: inline-block;
+    font-size: 13px; font-weight: 900;
+    padding: 4px 12px; border-radius: 999px;
+    background: #e6efff; color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .step.final-step { background: var(--blue); color: #fff; }
+  .step.final-step .tag { background: var(--gold); color: #3a2a00; }
+  .step h3 { font-size: 22px; margin-bottom: 4px; }
+  .step .big { font-family: "Black Han Sans", sans-serif; font-size: 34px; color: var(--blue); }
+  .step.final-step .big { color: var(--gold); }
+  .step p { font-size: 15px; opacity: .85; }
+  .mini { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .mini span {
+    font-size: 13px; font-weight: 700;
+    padding: 3px 9px; border-radius: 8px;
+  }
+  .w { background: #dff3e6; color: #1b6b3a; }
+  .l { background: #fde3e3; color: #a12a2a; }
+
+  /* ===== 경기 기록 표 ===== */
+  .final { background: var(--blue); color: #fff; }
+  .final h2 { color: #fff; }
+  .final .sub { color: #cfe0ff; }
+  .games { display: grid; gap: 12px; }
+  .game {
+    background: var(--blue-dark);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 6px 16px;
+    align-items: center;
+  }
+  .game .no { font-family: "Black Han Sans", sans-serif; font-size: 22px; }
+  .game .when { font-size: 13px; opacity: .75; }
+  .game .score { font-family: "Black Han Sans", sans-serif; font-size: 28px; white-space: nowrap; }
+  .game .score .s { color: var(--gold); }
+  .game .memo { grid-column: 2 / 4; font-size: 15px; opacity: .9; }
+  .game .badge {
+    font-size: 13px; font-weight: 900;
+    padding: 3px 10px; border-radius: 999px;
+    margin-left: 6px; vertical-align: middle;
+  }
+  .badge.win { background: var(--gold); color: #3a2a00; }
+  .badge.lose { background: #ffffff33; color: #fff; }
+  .game.champ { border: 3px solid var(--gold); }
+  @media (max-width: 560px) {
+    .game { grid-template-columns: 1fr auto; }
+    .game .memo { grid-column: 1 / 3; }
+  }
+
+  /* ===== 선수별 기록 ===== */
+  .mvp {
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 24px;
+    align-items: center;
+    border: 3px solid var(--gold);
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .mvp { grid-template-columns: 1fr; text-align: center; } }
+  .mvp-badge {
+    display: inline-block;
+    background: var(--gold); color: #3a2a00;
+    font-weight: 900; padding: 6px 16px; border-radius: 999px;
+  }
+  .mvp-name { font-family: "Black Han Sans", sans-serif; font-size: 54px; color: var(--blue); line-height: 1.2; }
+  .mvp-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .mvp-stats div {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 6px;
+    text-align: center;
+  }
+  .mvp-stats b { display: block; font-family: "Black Han Sans", sans-serif; font-size: 28px; color: var(--blue); }
+  .mvp-stats small { color: var(--muted); font-weight: 700; }
+  .mvp-note { grid-column: 1 / -1; color: var(--muted); font-size: 15px; }
+
+  .players {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .player { padding: 22px; border-left: 6px solid var(--sky); }
+  .player.pitcher { border-left-color: var(--red); }
+  .player .pos { font-size: 13px; font-weight: 900; color: var(--muted); }
+  .player b { font-size: 22px; color: var(--blue); }
+  .player .key { font-weight: 900; margin: 6px 0; }
+  .player p { color: var(--muted); font-size: 15px; }
+
+  /* ===== 전문가 평가 ===== */
+  .quotes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .quote { padding: 26px 24px; position: relative; }
+  .quote::before {
+    content: "“";
+    position: absolute; top: -6px; left: 14px;
+    font-size: 80px; color: var(--sky); opacity: .35;
+    font-family: Georgia, serif;
+  }
+  .quote h3 { font-size: 19px; color: var(--blue); margin-bottom: 8px; position: relative; }
+  .quote p { font-size: 15px; }
+  .quote .who { margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
+
+  /* ===== 우승 역사 ===== */
+  .history { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .ring {
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Black Han Sans", sans-serif;
+    font-size: 22px;
+    background: var(--card);
+    color: var(--blue);
+    border: 4px solid var(--blue);
+  }
+  .ring.now {
+    background: var(--gold); border-color: var(--gold); color: #3a2a00;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(245,197,66,.35);
+  }
+  .note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 18px; }
+
+  /* ===== 응원 메시지 ===== */
+  .cheer form { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cheer input {
+    flex: 1 1 220px;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 2px solid #c9d6ea;
+    border-radius: 12px;
+    font-family: inherit;
+  }
+  .cheer input:focus { outline: none; border-color: var(--blue); }
+  .cheer button {
+    padding: 14px 24px; font-size: 16px; font-weight: 700;
+    background: var(--blue); color: #fff;
+    border: none; border-radius: 12px; cursor: pointer;
+    font-family: inherit;
+  }
+  .cheer button:hover { background: var(--blue-dark); }
+  #messages { list-style: none; margin-top: 18px; display: grid; gap: 10px; }
+  #messages li {
+    background: var(--card);
+    padding: 14px 18px;
+    border-radius: 12px;
+    border-left: 5px solid var(--sky);
+  }
+
+  /* ===== 출처 ===== */
+  .sources { padding: 24px; font-size: 14px; }
+  .sources ul { padding-left: 20px; }
+  .sources li { margin: 4px 0; }
+  .sources a { color: var(--blue); }
+
+  footer {
+    background: var(--blue-dark);
+    color: #cfe0ff;
+    text-align: center;
+    padding: 28px 16px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- 맨 위 큰 화면 -->
+<header class="hero">
+  <canvas id="confetti"></canvas>
+  <div>
+    <div class="trophy">🏆</div>
+    <div class="year">2026 KBO 한국시리즈</div>
+    <h1>삼성 라이온즈<br><span class="gold">우승!</span></h1>
+    <p>12년을 기다린 통산 9번째 왕좌, 다시 대구로 🦁💙</p>
+  </div>
+</header>
+
+<!-- 메뉴 -->
+<nav>
+  <div class="wrap">
+    <a href="#features">기능</a>
+    <a href="#summary">한눈에</a>
+    <a href="#postseason">포스트시즌</a>
+    <a href="#games">경기 기록</a>
+    <a href="#players">선수 기록</a>
+    <a href="#experts">전문가 평가</a>
+    <a href="#history">우승 역사</a>
+    <a href="#cheer">축하 메시지</a>
+  </div>
+</nav>
+
+<!-- 0. 서비스 기능 -->
+<section id="features">
+  <div class="wrap">
+    <h2>이 사이트에서 볼 수 있어요</h2>
+    <p class="sub">카드를 누르면 해당 내용으로 이동해요</p>
+    <div class="bento">
+      <!-- 큰 카드: 핵심 기능 -->
+      <a class="feature card big games" href="#games">
+        <div class="icon">⚾</div>
+        <h3>경기 기록</h3>
+        <p>한국시리즈 1~5차전 점수와 경기별 주요 장면을 한 경기씩 다시 볼 수 있어요.</p>
+        <div class="chips">
+          <span>1차전 7:8</span>
+          <span class="win">2차전 3:2</span>
+          <span class="win">3차전 5:1</span>
+          <span class="win">4차전 10:5</span>
+          <span class="win">5차전 12:1 🏆</span>
+        </div>
+        <span class="go">경기 기록 보러 가기 →</span>
+      </a>
+      <a class="feature card big" href="#players">
+        <div class="icon">⭐</div>
+        <h3>선수별 기록</h3>
+        <p>MVP 구자욱부터 박승규, 디아즈, 원태인까지 우승을 이끈 선수들의 활약을 정리했어요.</p>
+        <div class="preview">
+          <div><b>.500</b><small>MVP 타율</small></div>
+          <div><b>6</b><small>타점</small></div>
+          <div><b>74%</b><small>MVP 득표</small></div>
+        </div>
+        <span class="go">선수 기록 보러 가기 →</span>
+      </a>
+
+      <!-- 작은 카드: 나머지 기능 -->
+      <a class="feature card" href="#postseason">
+        <div class="icon">🗺️</div>
+        <h3>포스트시즌 성적</h3>
+        <p>정규시즌 2위부터 우승까지의 여정</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#experts">
+        <div class="icon">🎙️</div>
+        <h3>전문가 평가</h3>
+        <p>언론과 구단이 꼽은 12년 만의 우승 비결</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#history">
+        <div class="icon">🏆</div>
+        <h3>우승 역사</h3>
+        <p>1985년부터 2026년까지, 삼성의 우승 9번</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#cheer">
+        <div class="icon">💌</div>
+        <h3>축하 메시지</h3>
+        <p>우승 축하 한마디를 직접 남겨 보세요</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 1. 숫자로 보는 우승 -->
+<section id="summary" style="padding-top:0">
+  <div class="wrap">
+    <h2>숫자로 보는 우승</h2>
+    <p class="sub">2026년 11월 8일, 대구에서 우승을 확정했어요</p>
+    <div class="stats">
+      <div class="stat card"><div class="num">V9</div><div class="label">통산 9번째 우승<br>(1985년 통합 우승 포함)</div></div>
+      <div class="stat card"><div class="num">12년</div><div class="label">만의 우승<br>(2014년 이후 처음)</div></div>
+      <div class="stat card"><div class="num">4승 1패</div><div class="label">정규시즌 1위 KT 위즈 상대</div></div>
+      <div class="stat card"><div class="num">4연승</div><div class="label">1차전 패배 뒤<br>내리 4경기 승리</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 포스트시즌 성적 -->
+<section id="postseason" style="padding-top:0">
+  <div class="wrap">
+    <h2>포스트시즌 성적</h2>
+    <p class="sub">정규시즌 2위에서 시작해 우승까지 · 포스트시즌 합계 <b>7승 3패</b></p>
+    <div class="road">
+      <div class="step card">
+        <span class="tag">정규시즌</span>
+        <h3>2위</h3>
+        <div class="big">83승 3무 58패</div>
+        <p>2위 자격으로 와일드카드·준플레이오프 없이 플레이오프로 바로 올라갔어요.</p>
+      </div>
+      <div class="step card">
+        <span class="tag">플레이오프 (5전 3승제)</span>
+        <h3>vs KIA 타이거즈</h3>
+        <div class="big">3승 2패</div>
+        <p>5차전 6:1 승리로 2년 만에 한국시리즈 진출!</p>
+        <div class="mini">
+          <span class="l">1차전 1:5</span>
+          <span class="w">2차전 8:3</span>
+          <span class="w">3차전 6:4</span>
+          <span class="l">4차전 2:4</span>
+          <span class="w">5차전 6:1</span>
+        </div>
+      </div>
+      <div class="step card final-step">
+        <span class="tag">한국시리즈 (7전 4승제)</span>
+        <h3>vs KT 위즈</h3>
+        <div class="big">4승 1패 🏆</div>
+        <p>정규시즌 1위 KT를 꺾은 업셋 우승. 2018년 SK 이후 8년 만이에요.</p>
+        <div class="mini">
+          <span class="l">1차전 7:8</span>
+          <span class="w">2차전 3:2</span>
+          <span class="w">3차전 5:1</span>
+          <span class="w">4차전 10:5</span>
+          <span class="w">5차전 12:1</span>
+        </div>
+      </div>
+    </div>
+    <p class="note">※ 점수는 모두 삼성 점수를 앞에 적었어요.</p>
+  </div>
+</section>
+
+<!-- 3. 한국시리즈 경기 기록 -->
+<section id="games" class="final">
+  <div class="wrap">
+    <h2>한국시리즈 경기 기록</h2>
+    <p class="sub">한 경기씩 다시 보기</p>
+    <div class="games">
+      <div class="game">
+        <div><div class="no">1차전</div><div class="when">11/3 · 수원</div></div>
+        <div class="score">삼성 7 : <span>8</span> KT</div>
+        <div><span class="badge lose">패</span></div>
+        <div class="memo">0:8로 끌려가다 7회 구자욱의 2점 홈런을 시작으로 1점 차까지 따라붙었어요. 졌지만 반격의 불씨를 살린 경기.</div>
+      </div>
+      <div class="game">
+        <div><div class="no">2차전</div><div class="when">11/4 · 수원</div></div>
+        <div class="score">삼성 <span class="s">3</span> : 2 KT</div>
+        <div><span class="badge win">승</span></div>
+        <div class="memo">연장 12회 끝장 승부! 디아즈가 4안타를 치고, 12회 상대 실책 때 결승 득점을 올렸어요. 시리즈 흐름이 바뀐 경기.</div>
+      </div>
+      <div class="game">
+        <div><div class="no">3차전</div><div class="when">11/6 · 대구</div></div>
+        <div class="score">삼성 <span class="s">5</span> : 1 KT</div>
+        <div><span class="badge win">승</span></div>
+        <div class="memo">홈 대구에서 첫 경기 승리. 구자욱이 2타점 3루타를 쳤어요.</div>
+      </div>
+      <div class="game">
+        <div><div class="no">4차전</div><div class="when">11/7 · 대구</div></div>
+        <div class="score">삼성 <span class="s">10</span> : 5 KT</div>
+        <div><span class="badge win">승</span></div>
+        <div class="memo">1회에만 6점을 뽑아내며 3연승. 박승규 4타수 3안타 3타점, 승리투수 이재희.</div>
+      </div>
+      <div class="game champ">
+        <div><div class="no">5차전 🏆</div><div class="when">11/8 · 대구</div></div>
+        <div class="score">삼성 <span class="s">12</span> : 1 KT</div>
+        <div><span class="badge win">우승</span></div>
+        <div class="memo">선발 원태인이 5이닝 1실점으로 승리투수, 페덱이 남은 4이닝을 무실점으로 막고 우승을 확정했어요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. 선수별 기록 -->
+<section id="players">
+  <div class="wrap">
+    <h2>선수별 기록</h2>
+    <p class="sub">한국시리즈를 빛낸 선수들</p>
+
+    <div class="mvp card">
+      <div>
+        <span class="mvp-badge">⭐ 한국시리즈 MVP</span>
+        <div class="mvp-name">구자욱</div>
+        <p>주장 · 외야수</p>
+      </div>
+      <div class="mvp-stats">
+        <div><b>.500</b><small>타율</small></div>
+        <div><b>10</b><small>안타 (20타수)</small></div>
+        <div><b>1</b><small>홈런</small></div>
+        <div><b>6</b><small>타점</small></div>
+        <div><b>5</b><small>득점</small></div>
+        <div><b>3</b><small>볼넷</small></div>
+      </div>
+      <p class="mvp-note">허벅지 뒤 근육 부상을 안고도 5경기 모두 출전해 매 경기 안타를 쳤어요. 기자단 투표 97표 중 72표(74.2%)를 받아 생애 첫 한국시리즈 MVP에 올랐어요.</p>
+    </div>
+
+    <div class="players">
+      <div class="player card">
+        <div class="pos">외야수 · MVP 투표 2위</div>
+        <b>박승규</b>
+        <div class="key">5경기 연속 안타 · 타율 5할</div>
+        <p>1차전부터 5차전까지 모두 안타를 쳤어요. 4차전에서는 4타수 3안타 3타점.</p>
+      </div>
+      <div class="player card">
+        <div class="pos">내야수</div>
+        <b>디아즈</b>
+        <div class="key">2차전 4안타 · 결승 득점</div>
+        <p>2차전에서 선취 타점 3루타와 연장 10회 적시타를 쳤고, 12회 결승 득점까지 올렸어요.</p>
+      </div>
+      <div class="player card">
+        <div class="pos">지명타자 · 베테랑</div>
+        <b>최형우</b>
+        <div class="key">40대 베테랑의 힘</div>
+        <p>2차전 2루타, 5차전 적시타로 힘을 보탰어요. 삼성으로 돌아와 우승까지 함께했어요.</p>
+      </div>
+      <div class="player card pitcher">
+        <div class="pos">투수 · 에이스</div>
+        <b>원태인</b>
+        <div class="key">5차전 선발승 · 5이닝 1실점</div>
+        <p>우승을 확정한 5차전 선발투수로 승리를 따냈어요.</p>
+      </div>
+      <div class="player card pitcher">
+        <div class="pos">투수 · 외국인</div>
+        <b>페덱</b>
+        <div class="key">5차전 4이닝 무실점</div>
+        <p>원태인에 이어 6회부터 마지막까지 실점 없이 막고 우승의 순간을 지켰어요.</p>
+      </div>
+      <div class="player card pitcher">
+        <div class="pos">투수</div>
+        <b>이재희</b>
+        <div class="key">4차전 승리투수</div>
+        <p>3연승을 완성한 4차전에서 승리투수가 됐어요.</p>
+      </div>
+      <div class="player card">
+        <div class="pos">포수 · 베테랑</div>
+        <b>강민호</b>
+        <div class="key">생애 첫 우승 반지 💍</div>
+        <p>오랜 프로 생활 끝에 드디어 첫 한국시리즈 우승을 맛봤어요.</p>
+      </div>
+      <div class="player card" style="border-left-color: var(--gold)">
+        <div class="pos">감독</div>
+        <b>박진만</b>
+        <div class="key">감독으로서 첫 우승</div>
+        <p>사령탑을 맡은 뒤 처음으로 한국시리즈 정상에 올랐어요.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 전문가들의 평가 -->
+<section id="experts" style="padding-top:0">
+  <div class="wrap">
+    <h2>전문가들의 평가</h2>
+    <p class="sub">언론과 구단이 꼽은 우승 비결 (기사 내용을 짧게 정리했어요)</p>
+    <div class="quotes">
+      <div class="quote card">
+        <h3>"야구 몰라요"를 보여준 우승</h3>
+        <p>시리즈 전 대부분의 전문가는 정규시즌 1위 KT의 우승을 예상했어요. 하지만 삼성은 1차전을 내준 뒤 연장 12회 2차전을 잡으면서 흐름을 완전히 바꿨어요.</p>
+        <div class="who">— 세계일보 칼럼</div>
+      </div>
+      <div class="quote card">
+        <h3>큰돈 없이 만든 우승</h3>
+        <p>스타 선수를 비싸게 사 오는 대신 사람과 시스템에 투자했어요. 선수 연봉 총액은 10개 구단 중 5위 수준이었지만, 꼭 필요한 곳(최형우 복귀, 외국인 선수 교체)에는 과감하게 투자했어요.</p>
+        <div class="who">— 디지털데일리 · 뉴스핌 · 서울경제</div>
+      </div>
+      <div class="quote card">
+        <h3>데이터로 키운 젊은 투수들</h3>
+        <p>몸의 움직임을 분석하는 장비와 훈련 프로그램으로 선수마다 투구 특징을 분석했고, 그 결과 젊은 투수들이 핵심 전력으로 성장했어요.</p>
+        <div class="who">— 뉴스핌</div>
+      </div>
+      <div class="quote card">
+        <h3>주장의 투혼이 만든 원팀</h3>
+        <p>포스트시즌 직전 다친 주장 구자욱이 아픈 몸으로 타율 5할을 치자 선수단이 하나로 뭉쳤다는 평가가 많아요. 부상 속 헌신은 MVP 투표에도 영향을 줬어요.</p>
+        <div class="who">— 언론 보도 종합 · YTN</div>
+      </div>
+      <div class="quote card">
+        <h3>바꾸고, 키우고, 뭉쳤다</h3>
+        <p>구단은 우승 비결로 ① 문을 넓힌 체질 개선 ② 데이터에 바탕을 둔 육성 ③ 개인보다 팀을 앞세운 선수단의 헌신, 세 가지를 꼽았어요.</p>
+        <div class="who">— 삼성 라이온즈 구단 자체 분석 (MHN스포츠 보도)</div>
+      </div>
+      <div class="quote card">
+        <h3>시즌 전 예상은? "마운드가 관건"</h3>
+        <p>개막 전 이대형 해설위원은 삼성의 타선은 막강하지만 마운드가 불안하다고 봤어요. 결국 가을에는 투수진이 버텨 주며 걱정을 이겨 냈어요.</p>
+        <div class="who">— 스포티비뉴스 (2026시즌 개막 전 인터뷰)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. 우승 역사 -->
+<section id="history" style="padding-top:0">
+  <div class="wrap">
+    <h2>삼성의 우승 역사</h2>
+    <p class="sub">이제 반지가 9개!</p>
+    <div class="history">
+      <div class="ring">1985</div>
+      <div class="ring">2002</div>
+      <div class="ring">2005</div>
+      <div class="ring">2006</div>
+      <div class="ring">2011</div>
+      <div class="ring">2012</div>
+      <div class="ring">2013</div>
+      <div class="ring">2014</div>
+      <div class="ring now">2026</div>
+    </div>
+    <p class="note">※ 1985년은 전·후기 통합 우승으로 한국시리즈가 열리지 않았어요.</p>
+  </div>
+</section>
+
+<!-- 7. 축하 메시지 -->
+<section id="cheer" class="cheer" style="padding-top:0">
+  <div class="wrap">
+    <h2>축하 메시지 남기기</h2>
+    <p class="sub">내 브라우저에만 저장돼요</p>
+    <form id="cheerForm">
+      <input id="cheerInput" maxlength="60" placeholder="예) 최강삼성! 12년 기다렸다!!" required>
+      <button type="submit">남기기 💙</button>
+    </form>
+    <ul id="messages"></ul>
+  </div>
+</section>
+
+<!-- 출처 -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="sources card">
+      <b>📰 참고한 기사</b>
+      <p style="color:var(--muted); margin:6px 0 10px">기록은 언론 보도를 바탕으로 정리했어요. 정확한 공식 기록은 KBO 홈페이지에서 확인해 주세요.</p>
+      <ul>
+        <li><a href="https://www.mt.co.kr/sports/2026/11/08/2026110817592781571" target="_blank">머니투데이 – 삼성, 12년 만에 한국시리즈 우승</a></li>
+        <li><a href="https://biz.heraldcorp.com/article/10929738" target="_blank">헤럴드경제 – 삼성, kt 꺾고 12년 만에 한국시리즈 정상…V9</a></li>
+        <li><a href="https://biz.heraldcorp.com/article/10929297" target="_blank">헤럴드경제 – 1회 6득점 삼성, KS 3연승</a></li>
+        <li><a href="https://star.ohmynews.com/NWS_Web/OhmyStar/at_pg.aspx?CNTN_CD=A0003282959" target="_blank">오마이스타 – 12년 만에 KS 우승, 8년 만에 업셋 우승</a></li>
+        <li><a href="https://www.munhwa.com/article/11627869" target="_blank">문화일보 – 삼성, KIA 꺾고 플레이오프 통과</a></li>
+        <li><a href="https://www.newsen.com/news_view.php?uid=202611081728461031" target="_blank">뉴스엔 – 구자욱, 한국시리즈 MVP 수상</a></li>
+        <li><a href="https://www.topstarnews.net/news/articleView.html?idxno=16271273" target="_blank">톱스타뉴스 – '부상 투혼' 구자욱, 타율 0.500</a></li>
+        <li><a href="https://www.ytn.co.kr/_ln/0107_202611091401008264" target="_blank">YTN – 우승 뒤 숨은 영웅들</a></li>
+        <li><a href="https://m.news.nate.com/view/20261104n41260" target="_blank">네이트 스포츠 – 4안타 치고 결승 득점, 디아즈가 쓴 드라마</a></li>
+        <li><a href="https://www.segye.com/newsView/20261111515676" target="_blank">세계일보 – "야구 몰라요" 정수 보여준 삼성</a></li>
+        <li><a href="https://www.ddaily.co.kr/page/view/2026111015354262833" target="_blank">디지털데일리 – 삼성의 '실용경영', 야구단에도 통했다</a></li>
+        <li><a href="https://www.newspim.com/news/view/20261110000555" target="_blank">뉴스핌 – '실용·성과주의' 경영 통했다</a></li>
+        <li><a href="https://mhnse.com/news/articleView.html?idxno=1691128" target="_blank">MHN스포츠 – 삼성이 직접 분석한 우승 비결</a></li>
+        <li><a href="https://www.spotvnews.co.kr/news/articleView.html?idxno=800731" target="_blank">스포티비뉴스 – 이대형 해설에게 물었다, 삼성 우승 후보인가요?</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  삼성 라이온즈 팬이 만든 비공식 축하 페이지입니다 · 지능정보사회 과제
+</footer>
+
+<script>
+  // ===== 꽃가루(색종이) 효과 =====
+  const canvas = document.getElementById("confetti");
+  const ctx = canvas.getContext("2d");
+  const colors = ["#f5c542", "#ffffff", "#4ea3ff", "#9fd0ff"];
+  let pieces = [];
+
+  const hero = document.querySelector(".hero");
+
+  // 맨 위 화면(hero) 크기에 맞춰 그림판 크기를 정해요
+  function resize() {
+    const oldW = canvas.width || 1;
+    canvas.width = hero.clientWidth;
+    canvas.height = hero.clientHeight;
+    // 창 크기가 바뀌면 꽃가루도 새 너비에 맞게 다시 퍼뜨려요
+    for (const p of pieces) p.x = p.x / oldW * canvas.width;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  // 화면이 넓을수록 꽃가루를 더 많이 만들어요
+  const count = Math.round(canvas.width / 8);
+  for (let i = 0; i < count; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height * 2 - canvas.height,
+      size: 5 + Math.random() * 7,
+      speed: 1 + Math.random() * 2.5,
+      spin: Math.random() * Math.PI,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of pieces) {
+      p.y += p.speed;
+      p.spin += 0.05;
+      p.x += Math.sin(p.spin) * 0.8;
+      if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.spin);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      ctx.restore();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // ===== 축하 메시지 (내 컴퓨터 브라우저에 저장) =====
+  const list = document.getElementById("messages");
+  const input = document.getElementById("cheerInput");
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem("cheers") || "[]"); } catch (e) {}
+
+  function show() {
+    list.innerHTML = "";
+    for (const text of saved) {
+      const li = document.createElement("li");
+      li.textContent = "🦁 " + text;
+      list.appendChild(li);
+    }
+  }
+
+  document.getElementById("cheerForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    saved.unshift(text);
+    try { localStorage.setItem("cheers", JSON.stringify(saved)); } catch (e) {}
+    input.value = "";
+    show();
+  });
+
+  show();
+</script>
+</body>
+</html>
