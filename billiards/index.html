@@ -1463,7 +1463,7 @@ function isFrozen(bs, cue) { const R = S.p.R, cb = bs[cue]; return bs.some((o, i
 function spreadOf(bs, cue) { const d = (i, j) => Math.hypot(bs[i].x - bs[j].x, bs[i].y - bs[j].y); return d(cue, 2) + d(cue, 3) + d(2, 3); }
 // 주어진 배치에서 득점 경로 수를 짧게 세어 봄
 async function countRoutes(balls, cue, kind, budget, ms, alive) {
-  const judge = shotJudge(kind, cue, false), tryShot = makeTrier(balls, cue, judge, kind !== '4b');
+  const judge = shotJudge(kind, cue, false), tryShot = makeTrier(balls, cue, judge, kind === '3c');
   const cands = shotCands(balls, cue, kind, false);
   let n = 0, ok = 0; const t0 = performance.now(); let ts = t0;
   for (const c of cands) {
@@ -1477,7 +1477,7 @@ async function countRoutes(balls, cue, kind, budget, ms, alive) {
 async function solveShot(o) {
   const { balls, cue, kind, alive, progress } = o;
   const need2 = kind !== '4b', is3 = kind === '3c';
-  const tryShot = makeTrier(balls, cue, shotJudge(kind, cue, o.firstShot), need2);
+  const tryShot = makeTrier(balls, cue, shotJudge(kind, cue, o.firstShot), is3);   // 4구 쓰리쿠는 나중에 상대 공을 맞힐 수 있어 공이 멈출 때까지 계산
   const rate = e => {
     if (e.ok) { const bank = is3 && e.seq.length > 0 && e.seq[0].t === 'c'; return { ok: true, bank, q: 1000 + (bank ? 150 : 0) }; }
     if (kind === 'three' && e.foul) return { ok: false, q: 0 };
@@ -1980,13 +1980,13 @@ function announceThree(g) {
   }
 }
 // 점수가 확정되는 순간 계산 (온라인 대전)
-// 3구·쓰리쿠: 득점이 인정되는 순간(두 번째 공에 맞는 순간) / 4구 득점·헛맞음: 공이 모두 멈췄을 때 / 4구 상대 공 접촉: 맞는 순간
+// 3구: 득점이 인정되는 순간(두 번째 공에 맞는 순간) / 4구 득점·쓰리쿠·헛맞음: 공이 모두 멈췄을 때 / 4구 상대 공 접촉: 맞는 순간
 function scoreMoment(res) {
   const g = S.game; if (!g || !g.online || !g.pl) return null;
   const ev = res.ev, who = g.turn, color = g.pl[who].ball === 0 ? '#ffffff' : '#f5c542', cue = S.cue;
   const hitTime = n => { const seen = []; for (const e of res.events) if (e.k === 'b' && (e.i === cue || e.j === cue)) { const o = e.i === cue ? e.j : e.i; if (!seen.includes(o)) { seen.push(o); if (seen.length === n) return e.t; } } return 'end'; };
   if (g.table === '3c') { if (!ev.ok) return null; const bank = ev.seq.length > 0 && ev.seq[0].t === 'c'; return { t: hitTime(2), who, delta: bank ? 2 : 1, color }; }
-  if (g.phase === 'three') return ev.ok ? { t: hitTime(2), who, three: true, color } : null;
+  if (g.phase === 'three') return ev.ok ? { t: 'end', who, three: true, color } : null;   // 4구 쓰리쿠: 나중에 상대 공 파울이 날 수 있어 공이 모두 멈춘 뒤
   if (ev.ok) return { t: 'end', who, delta: 1, color };
   if (g.score <= 0) return null;   // 0점이면 감점 없음
   if (ev.foul) {
