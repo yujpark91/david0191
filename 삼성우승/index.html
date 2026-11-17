@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2026 삼성 라이온즈 우승</title>
+<title>삼성 라이온즈 우승 기록</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
     --blue: #074ca1;
@@ -30,7 +30,9 @@
   section { padding: 64px 16px; scroll-margin-top: 56px; }
   .wrap { max-width: 960px; margin: 0 auto; }
   h2 {
-    font-family: "Black Han Sans", sans-serif;
+    font-family: "Noto Sans KR", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.5px;
     font-size: clamp(28px, 5vw, 40px);
     color: var(--blue);
     margin-bottom: 8px;
@@ -79,7 +81,9 @@
   }
   .hero .year { font-size: 18px; letter-spacing: 6px; opacity: .85; }
   .hero h1 {
-    font-family: "Black Han Sans", sans-serif;
+    font-family: "Noto Sans KR", sans-serif;
+    font-weight: 800;
+    letter-spacing: -1px;
     font-size: clamp(44px, 11vw, 110px);
     line-height: 1.1;
     margin: 12px 0;
@@ -249,7 +253,7 @@
   .game .score { font-family: "Black Han Sans", sans-serif; font-size: 28px; white-space: nowrap; }
   .game .score .s { color: var(--gold); }
   .game .memo { grid-column: 2 / 4; font-size: 15px; opacity: .9; }
-  .game .badge {
+  .game .badge, .gm .badge {
     font-size: 13px; font-weight: 900;
     padding: 3px 10px; border-radius: 999px;
     margin-left: 6px; vertical-align: middle;
@@ -260,6 +264,57 @@
   @media (max-width: 560px) {
     .game { grid-template-columns: 1fr auto; }
     .game .memo { grid-column: 1 / 3; }
+  }
+
+  /* ===== 경기별 상세 기록 ===== */
+  .gm { background: var(--blue-dark); border-radius: 16px; padding: 0; }
+  .gm > summary { list-style: none; cursor: pointer; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 22px; font-weight: 900; }
+  .gm > summary::-webkit-details-marker { display: none; }
+  .gm > summary::after { content: "▼"; font-size: 14px; opacity: .7; transition: transform .25s ease; }
+  .gm[open] > summary::after { transform: rotate(180deg); }
+  .gm > summary:hover { color: var(--gold); }
+  .gm-body { padding: 0 20px 20px; }
+  .gm-box li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 4px 0; }
+  .gm-box li + li { border-top: 1px dashed #ffffff26; }
+  .gm .team { font-size: 11px; font-weight: 900; padding: 1px 7px; border-radius: 6px; background: #ffffff26; color: #fff; }
+  .gm .team.ss { background: var(--sky); color: #04306a; }
+  .gm .pn { font-weight: 900; color: #fff; font-size: 15px; }
+  .gm .rec { color: #b9cdef; font-size: 13.5px; }
+  .gm .plays b { color: var(--gold); font-weight: 900; }
+  .gm .plays-box { margin-top: 12px; background: #ffffff10; border-radius: 12px; padding: 12px 14px; }
+  .gm .plays-box h4 { font-size: 13px; color: var(--gold); margin-bottom: 4px; }
+  .gm.champ { border: 3px solid var(--gold); }
+  .gm-top { margin-top: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+  .gm-top .no { font-size: 22px; font-weight: 900; }
+  .gm-top .when { font-size: 13px; opacity: .75; }
+  .gm-top .score { margin-left: auto; font-family: "Black Han Sans", sans-serif; font-size: 28px; white-space: nowrap; }
+  .gm-top .score .s { color: var(--gold); }
+  .gm-title { font-size: 17px; font-weight: 800; margin: 8px 0 12px; color: #fff; }
+  .ls-wrap { overflow-x: auto; border-radius: 10px; background: #ffffff10; }
+  .ls { border-collapse: collapse; width: 100%; font-size: 14px; text-align: center; white-space: nowrap; }
+  .ls th, .ls td { padding: 7px 8px; }
+  .ls th { font-size: 12px; opacity: .7; font-weight: 700; }
+  .ls td:first-child, .ls th:first-child { text-align: left; font-weight: 800; padding-left: 12px; }
+  .ls td.r { font-weight: 900; color: var(--gold); border-left: 1px solid #ffffff33; }
+  .ls td.hit { color: #fff; font-weight: 900; background: #ffffff1a; border-radius: 6px; }
+  .ls tr + tr td { border-top: 1px solid #ffffff1a; }
+  .gm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .gm-box { background: #ffffff10; border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+  .gm-box h4 { font-size: 13px; color: var(--gold); margin-bottom: 6px; }
+  .gm-box ul { list-style: none; display: grid; gap: 4px; }
+  .gm-box li { opacity: .92; }
+  .gm-box b { color: #fff; }
+  .gm .plays { list-style: none; margin-top: 8px; display: grid; gap: 8px; font-size: 14px; }
+  .gm .plays li { display: grid; grid-template-columns: 64px 1fr; gap: 8px; }
+  .gm .plays li .inn { font-weight: 900; font-size: 13px; padding: 2px 0; border-radius: 6px; text-align: center; background: #ffffff22; height: fit-content; }
+  .gm .plays li.sam .inn { background: var(--sky); color: #04306a; }
+  .ls td.k { border-left: 1px solid #ffffff33; font-weight: 700; }
+  .ls th.k { border-left: 1px solid #ffffff33; }
+  @media (max-width: 560px) {
+    .gm > summary { padding: 16px; }
+    .gm-body { padding: 0 14px 16px; }
+    .gm-grid { grid-template-columns: 1fr; }
+    .gm-top .score { margin-left: 0; width: 100%; }
   }
 
   /* ===== 선수별 기록 ===== */
@@ -278,7 +333,7 @@
     background: var(--gold); color: #3a2a00;
     font-weight: 900; padding: 6px 16px; border-radius: 999px;
   }
-  .mvp-name { font-family: "Black Han Sans", sans-serif; font-size: 54px; color: var(--blue); line-height: 1.2; }
+  .mvp-name { font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: 54px; color: var(--blue); line-height: 1.2; }
   .mvp-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -342,6 +397,77 @@
   }
   .note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 18px; }
 
+  /* ===== 우승 연대기 ===== */
+  .timeline { position: relative; display: grid; gap: 22px; padding-left: 34px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 11px; top: 8px; bottom: 8px;
+    width: 4px; border-radius: 4px;
+    background: linear-gradient(var(--gold), var(--blue) 20%, var(--gold) 40%, var(--gold) 55%, #9aa6b8 65%, #9aa6b8 80%, var(--gold));
+  }
+  .era { padding: 24px 24px 22px; position: relative; border-top: 5px solid var(--blue); }
+  .era::before {
+    content: ""; position: absolute; left: -31px; top: 26px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--card); border: 4px solid var(--blue);
+  }
+  .era.gold { border-top-color: var(--gold); }
+  .era.gold::before { background: var(--gold); border-color: var(--gold); }
+  .era.dark { border-top-color: #9aa6b8; background: #eef1f6; }
+  .era.dark::before { border-color: #9aa6b8; }
+  .era .yrs { display: inline-block; font-size: 13px; font-weight: 900; padding: 4px 12px; border-radius: 999px; background: #e6efff; color: var(--blue); }
+  .era.gold .yrs { background: var(--gold); color: #3a2a00; }
+  .era.dark .yrs { background: #d6dce6; color: #46536a; }
+  .era h3 { font-family: "Noto Sans KR", sans-serif; font-weight: 800; letter-spacing: -0.3px; font-size: clamp(24px, 4vw, 30px); color: var(--blue); margin: 10px 0 6px; line-height: 1.25; }
+  .era.dark h3 { color: #46536a; }
+  .era p { font-size: 15px; color: var(--text); margin-top: 6px; }
+  .era .facts { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .era .facts span { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: var(--bg); color: var(--muted); }
+  .era .facts span.w { background: #fff2c9; color: #6b4e00; }
+  .era .facts span.l { background: #fde3e3; color: #a12a2a; }
+  .era { cursor: pointer; outline: none; transition: box-shadow .25s ease, transform .25s ease; }
+  .era h3::after { content: " ＋"; font-size: .7em; color: var(--muted); font-weight: 700; }
+  .era-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+  .era-more > div { overflow: hidden; }
+  .era:hover .era-more, .era:focus-within .era-more { grid-template-rows: 1fr; }
+  .era:hover h3::after, .era:focus-within h3::after { content: " −"; }
+  .era:hover, .era:focus-within { box-shadow: 0 14px 30px rgba(7,76,161,.16); transform: translateY(-2px); }
+  .era h3 { margin-bottom: 0; }
+  .era-more p:first-child { margin-top: 12px; }
+  @media (prefers-reduced-motion: reduce) { .era-more, .era { transition: none; } .era:hover, .era:focus-within { transform: none; } }
+  .era .go { display: inline-block; margin-top: 14px; font-weight: 700; color: var(--blue); text-decoration: none; }
+  @media (max-width: 560px) {
+    .timeline { padding-left: 26px; }
+    .timeline::before { left: 6px; }
+    .era::before { left: -27px; }
+    .era { padding: 20px 18px; }
+  }
+
+  /* ===== 순위 그래프 ===== */
+  .ranks { padding: 24px 18px 16px; }
+  .ranks .bars { display: grid; grid-template-columns: repeat(17, 1fr); gap: 4px; align-items: end; height: 200px; }
+  .ranks .bar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+  .ranks .bar i { display: block; width: 100%; max-width: 34px; border-radius: 6px 6px 2px 2px; background: var(--blue); }
+  .ranks .bar.champ i { background: var(--gold); }
+  .ranks .bar.low i { background: #9aa6b8; }
+  .ranks .bar b { font-size: 13px; margin-bottom: 4px; color: var(--text); }
+  .ranks .yrs { display: grid; grid-template-columns: repeat(17, 1fr); gap: 4px; margin-top: 6px; }
+  .ranks .yrs span { font-size: 11px; color: var(--muted); text-align: center; font-weight: 700; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 14px; font-size: 13px; color: var(--muted); font-weight: 700; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  @media (max-width: 560px) {
+    .ranks { padding: 20px 10px 14px; }
+    .ranks .bars { height: 160px; gap: 2px; }
+    .ranks .bar b { font-size: 9px; }
+    .ranks .yrs { gap: 2px; }
+    .ranks .yrs span { font-size: 9px; }
+  }
+
+  /* ===== 2026 장 시작 ===== */
+  .chapter-head { background: linear-gradient(145deg, var(--blue), var(--blue-dark)); color: #fff; text-align: center; padding: 56px 16px; }
+  .chapter-head .k { letter-spacing: 4px; font-weight: 700; opacity: .8; font-size: 14px; }
+  .chapter-head h2 { color: #fff; margin: 6px 0; }
+  .chapter-head p { color: #cfe0ff; }
+
   /* ===== 응원 메시지 ===== */
   .cheer form { display: flex; gap: 8px; flex-wrap: wrap; }
   .cheer input {
@@ -390,9 +516,9 @@
   <canvas id="confetti"></canvas>
   <div>
     <div class="trophy">🏆</div>
-    <div class="year">2026 KBO 한국시리즈</div>
-    <h1>삼성 라이온즈<br><span class="gold">우승!</span></h1>
-    <p>12년을 기다린 통산 9번째 왕좌, 다시 대구로 🦁💙</p>
+    <div class="year">1982 – 2026</div>
+    <h1>삼성 라이온즈<br><span class="gold">우승의 기록</span></h1>
+    <p>첫 우승, 긴 기다림, 왕조, 몰락과 암흑기<br>그리고 2026년 통산 9번째 우승까지 🦁💙</p>
   </div>
 </header>
 
@@ -400,12 +526,14 @@
 <nav>
   <div class="wrap">
     <a href="#features">기능</a>
-    <a href="#summary">한눈에</a>
+    <a href="#history">우승 반지</a>
+    <a href="#story">연대기</a>
+    <a href="#ranks">순위 변화</a>
+    <a href="#summary">2026 한눈에</a>
     <a href="#postseason">포스트시즌</a>
     <a href="#games">경기 기록</a>
     <a href="#players">선수 기록</a>
     <a href="#experts">전문가 평가</a>
-    <a href="#history">우승 역사</a>
     <a href="#cheer">축하 메시지</a>
   </div>
 </nav>
@@ -417,23 +545,24 @@
     <p class="sub">카드를 누르면 해당 내용으로 이동해요</p>
     <div class="bento">
       <!-- 큰 카드: 핵심 기능 -->
-      <a class="feature card big games" href="#games">
-        <div class="icon">⚾</div>
-        <h3>경기 기록</h3>
-        <p>한국시리즈 1~5차전 점수와 경기별 주요 장면을 한 경기씩 다시 볼 수 있어요.</p>
+      <a class="feature card big games" href="#story">
+        <div class="icon">📜</div>
+        <h3>우승 연대기</h3>
+        <p>1982년 창단부터 2026년 우승까지, 삼성의 45년을 일곱 장면으로 따라가 봐요.</p>
         <div class="chips">
-          <span>1차전 7:8</span>
-          <span class="win">2차전 3:2</span>
-          <span class="win">3차전 5:1</span>
-          <span class="win">4차전 10:5</span>
-          <span class="win">5차전 12:1 🏆</span>
+          <span class="win">1985 첫 우승</span>
+          <span>KS 7전 7패</span>
+          <span class="win">2002 첫 KS 우승</span>
+          <span class="win">2011~14 왕조</span>
+          <span>2016~20 암흑기</span>
+          <span class="win">2026 V9 🏆</span>
         </div>
-        <span class="go">경기 기록 보러 가기 →</span>
+        <span class="go">연대기 보러 가기 →</span>
       </a>
       <a class="feature card big" href="#players">
         <div class="icon">⭐</div>
         <h3>선수별 기록</h3>
-        <p>MVP 구자욱부터 박승규, 디아즈, 원태인까지 우승을 이끈 선수들의 활약을 정리했어요.</p>
+        <p>2026년 MVP 구자욱부터 박승규, 디아즈, 원태인까지 우승을 이끈 선수들의 활약을 정리했어요.</p>
         <div class="preview">
           <div><b>.500</b><small>MVP 타율</small></div>
           <div><b>6</b><small>타점</small></div>
@@ -443,22 +572,22 @@
       </a>
 
       <!-- 작은 카드: 나머지 기능 -->
-      <a class="feature card" href="#postseason">
-        <div class="icon">🗺️</div>
-        <h3>포스트시즌 성적</h3>
-        <p>정규시즌 2위부터 우승까지의 여정</p>
+      <a class="feature card" href="#ranks">
+        <div class="icon">📈</div>
+        <h3>순위 변화</h3>
+        <p>왕조에서 암흑기, 다시 정상까지 한눈에</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#games">
+        <div class="icon">⚾</div>
+        <h3>2026 경기 기록</h3>
+        <p>한국시리즈 1~5차전 다시 보기</p>
         <span class="go">보러 가기 →</span>
       </a>
       <a class="feature card" href="#experts">
         <div class="icon">🎙️</div>
         <h3>전문가 평가</h3>
         <p>언론과 구단이 꼽은 12년 만의 우승 비결</p>
-        <span class="go">보러 가기 →</span>
-      </a>
-      <a class="feature card" href="#history">
-        <div class="icon">🏆</div>
-        <h3>우승 역사</h3>
-        <p>1985년부터 2026년까지, 삼성의 우승 9번</p>
         <span class="go">보러 가기 →</span>
       </a>
       <a class="feature card" href="#cheer">
@@ -471,8 +600,171 @@
   </div>
 </section>
 
+<!-- 우승 반지 -->
+<section id="history" style="padding-top:0">
+  <div class="wrap">
+    <h2>삼성의 우승 역사</h2>
+    <p class="sub">1985년부터 2026년까지 모은 우승 반지 9개</p>
+    <div class="history">
+      <div class="ring">1985</div>
+      <div class="ring">2002</div>
+      <div class="ring">2005</div>
+      <div class="ring">2006</div>
+      <div class="ring">2011</div>
+      <div class="ring">2012</div>
+      <div class="ring">2013</div>
+      <div class="ring">2014</div>
+      <div class="ring now">2026</div>
+    </div>
+    <p class="note">※ 1985년은 전·후기 통합 우승으로 한국시리즈가 열리지 않았어요.</p>
+  </div>
+</section>
+
+<!-- 우승 연대기 -->
+<section id="story" style="padding-top:0">
+  <div class="wrap">
+    <h2>우승 연대기</h2>
+    <p class="sub">1982년 창단부터 2026년까지, 일곱 장면으로 보는 삼성<br>카드에 마우스를 올리면 (핸드폰은 누르면) 자세한 기록이 보여요</p>
+    <div class="timeline">
+
+      <div class="era card gold" tabindex="0">
+        <span class="yrs">1982 – 1985</span>
+        <h3>① 원년 구단의 첫 우승</h3>
+        <div class="era-more"><div>
+        <p>삼성은 1982년 프로야구가 시작될 때부터 함께한 원년 구단이에요. 첫해 한국시리즈에서 OB 베어스에 졌지만, 1985년에는 전기리그와 후기리그를 모두 1위로 마쳐 <b>한국시리즈 없이 통합 우승</b>을 차지했어요.</p>
+        <p>1985년 승률 <b>.706</b>(77승 1무 32패)은 지금도 손꼽히는 기록이에요. 김시진과 김일융이 나란히 25승씩 올렸어요.</p>
+        <div class="facts">
+          <span class="l">1982 KS 준우승 (vs OB)</span>
+          <span class="l">1984 KS 준우승 (vs 롯데)</span>
+          <span class="w">1985 전·후기 통합 우승 🏆</span>
+        </div>
+        </div></div>
+      </div>
+
+      <div class="era card" tabindex="0">
+        <span class="yrs">1986 – 2001</span>
+        <h3>② 한국시리즈만 가면 졌다</h3>
+        <div class="era-more"><div>
+        <p>1985년 우승은 한국시리즈를 이겨서 얻은 게 아니었어요. 삼성은 늘 강팀이었지만 한국시리즈에서는 번번이 졌어요. 2002년 전까지 한국시리즈에 <b>7번 올라가 7번 모두 준우승</b>에 그쳤어요.</p>
+        <p>특히 해태 타이거즈에 여러 번 막히면서 "삼성은 한국시리즈에 약하다"는 말까지 들었어요. 이 긴 기다림이 2002년 우승을 더 극적으로 만들었어요.</p>
+        <div class="facts">
+          <span class="l">1986 vs 해태</span>
+          <span class="l">1987 vs 해태</span>
+          <span class="l">1990 vs LG</span>
+          <span class="l">1993 vs 해태</span>
+          <span class="l">2001 vs 두산</span>
+        </div>
+        </div></div>
+      </div>
+
+      <div class="era card gold" tabindex="0">
+        <span class="yrs">2002 – 2006</span>
+        <h3>③ 드디어 한국시리즈 첫 우승</h3>
+        <div class="era-more"><div>
+        <p>2002년 LG와의 한국시리즈 6차전 9회말, <b>이승엽의 동점 3점 홈런</b>과 <b>마해영의 끝내기 홈런</b>이 연달아 터지며 창단 첫 한국시리즈 우승을 차지했어요. 지금도 한국시리즈 최고의 명장면으로 꼽혀요.</p>
+        <p>이어 선동열 감독이 이끈 2005·2006년에는 2년 연속 우승했어요. 오승환이 지키는 강한 불펜이 무기였어요.</p>
+        <div class="facts">
+          <span class="w">2002 vs LG 🏆</span>
+          <span class="l">2004 vs 현대 준우승</span>
+          <span class="w">2005 vs 두산 🏆</span>
+          <span class="w">2006 vs 한화 🏆</span>
+        </div>
+        </div></div>
+      </div>
+
+      <div class="era card gold" tabindex="0">
+        <span class="yrs">2011 – 2014</span>
+        <h3>④ 왕조 시절: 통합 4연패</h3>
+        <div class="era-more"><div>
+        <p>류중일 감독이 부임한 2011년부터 삼성은 <b>4년 연속 정규시즌 1위와 한국시리즈 우승</b>을 함께 해냈어요. KBO 역사상 처음 있는 '통합 4연패'예요.</p>
+        <p>2013년에는 두산에 1승 3패로 몰렸다가 3연승으로 뒤집기도 했어요. 이승엽·최형우·박석민 같은 타자와 윤성환·장원삼·차우찬·오승환 같은 투수들이 함께한 시기예요.</p>
+        <div class="facts">
+          <span class="w">2011 vs SK 🏆</span>
+          <span class="w">2012 vs SK 🏆</span>
+          <span class="w">2013 vs 두산 🏆</span>
+          <span class="w">2014 vs 넥센 🏆</span>
+          <span>2010~2015 6년 연속 KS 진출</span>
+        </div>
+        </div></div>
+      </div>
+
+      <div class="era card dark" tabindex="0">
+        <span class="yrs">2015 – 2020</span>
+        <h3>⑤ 왕조의 몰락과 암흑기</h3>
+        <div class="era-more"><div>
+        <p>2015년에도 정규시즌 1위였지만, 한국시리즈 직전 주축 투수들이 <b>해외 원정 도박 사건</b>에 휘말려 빠졌어요. 결국 두산에 1승 4패로 져 통합 5연패가 무산됐어요.</p>
+        <p>그 뒤 박석민, 최형우, 차우찬 등 핵심 선수들이 FA로 팀을 떠났고, 이승엽도 2017년 은퇴했어요. 새 구장 삼성 라이온즈 파크를 연 2016년부터 <b>5년 연속 가을야구에 나가지 못했어요</b>. 2016·2017년에는 9위까지 떨어졌어요.</p>
+        <div class="facts">
+          <span class="l">2015 KS 준우승 (vs 두산)</span>
+          <span>2016 9위</span>
+          <span>2017 9위</span>
+          <span>2018 6위</span>
+          <span>2019 8위</span>
+          <span>2020 8위</span>
+        </div>
+        </div></div>
+      </div>
+
+      <div class="era card" tabindex="0">
+        <span class="yrs">2021 – 2025</span>
+        <h3>⑥ 다시 일어서는 사자</h3>
+        <div class="era-more"><div>
+        <p>2021년 정규시즌 2위로 6년 만에 가을야구에 돌아왔지만, 2022·2023년에는 다시 하위권으로 떨어졌어요. 그 사이 박진만 감독이 지휘봉을 잡았어요.</p>
+        <p>2024년에는 정규시즌 2위로 9년 만에 한국시리즈에 올랐지만 KIA에 1승 4패로 졌어요. 2025년에는 4위로 와일드카드부터 시작해 플레이오프까지 올라갔지만 한화에 2승 3패로 멈췄어요. 그래도 젊은 선수들이 자라면서 다시 우승을 노릴 힘이 쌓였어요.</p>
+        <div class="facts">
+          <span>2021 2위 · PO 탈락</span>
+          <span>2022 7위</span>
+          <span>2023 8위</span>
+          <span class="l">2024 2위 · KS 준우승</span>
+          <span>2025 4위 · PO 탈락</span>
+        </div>
+        </div></div>
+      </div>
+
+      <div class="era card gold" tabindex="0">
+        <span class="yrs">2026</span>
+        <h3>⑦ 12년 만에, 다시 정상으로</h3>
+        <div class="era-more"><div>
+        <p>정규시즌 2위로 플레이오프에서 KIA를 꺾고, 한국시리즈에서는 정규시즌 1위 KT를 <b>4승 1패</b>로 이겼어요. 2014년 이후 12년 만이자 <b>통산 9번째 우승</b>이에요.</p>
+        <div class="facts">
+          <span class="w">2026 vs KT 4승 1패 🏆</span>
+          <span>MVP 구자욱</span>
+          <span>감독 박진만</span>
+        </div>
+        <a class="go" href="#summary">2026년 우승 자세히 보기 ↓</a>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 순위 변화 -->
+<section id="ranks" style="padding-top:0">
+  <div class="wrap">
+    <h2>정규시즌 순위 변화</h2>
+    <p class="sub">2010년부터 2026년까지 · 막대가 높을수록 순위가 높아요</p>
+    <div class="ranks card">
+      <div class="bars" id="rankBars"></div>
+      <div class="yrs" id="rankYears"></div>
+      <div class="legend">
+        <span><i style="background:var(--gold)"></i>한국시리즈 우승</span>
+        <span><i style="background:var(--blue)"></i>가을야구 진출</span>
+        <span><i style="background:#9aa6b8"></i>가을야구 실패</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2026 우승 이야기 시작 -->
+<div class="chapter-head">
+  <div class="k">CHAPTER 2026</div>
+  <h2>2026년, 12년 만의 우승</h2>
+  <p>여기부터는 2026년 우승 시즌을 자세히 정리했어요</p>
+</div>
+
 <!-- 1. 숫자로 보는 우승 -->
-<section id="summary" style="padding-top:0">
+<section id="summary">
   <div class="wrap">
     <h2>숫자로 보는 우승</h2>
     <p class="sub">2026년 11월 8일, 대구에서 우승을 확정했어요</p>
@@ -531,40 +823,10 @@
 <!-- 3. 한국시리즈 경기 기록 -->
 <section id="games" class="final">
   <div class="wrap">
-    <h2>한국시리즈 경기 기록</h2>
-    <p class="sub">한 경기씩 다시 보기</p>
-    <div class="games">
-      <div class="game">
-        <div><div class="no">1차전</div><div class="when">11/3 · 수원</div></div>
-        <div class="score">삼성 7 : <span>8</span> KT</div>
-        <div><span class="badge lose">패</span></div>
-        <div class="memo">0:8로 끌려가다 7회 구자욱의 2점 홈런을 시작으로 1점 차까지 따라붙었어요. 졌지만 반격의 불씨를 살린 경기.</div>
-      </div>
-      <div class="game">
-        <div><div class="no">2차전</div><div class="when">11/4 · 수원</div></div>
-        <div class="score">삼성 <span class="s">3</span> : 2 KT</div>
-        <div><span class="badge win">승</span></div>
-        <div class="memo">연장 12회 끝장 승부! 디아즈가 4안타를 치고, 12회 상대 실책 때 결승 득점을 올렸어요. 시리즈 흐름이 바뀐 경기.</div>
-      </div>
-      <div class="game">
-        <div><div class="no">3차전</div><div class="when">11/6 · 대구</div></div>
-        <div class="score">삼성 <span class="s">5</span> : 1 KT</div>
-        <div><span class="badge win">승</span></div>
-        <div class="memo">홈 대구에서 첫 경기 승리. 구자욱이 2타점 3루타를 쳤어요.</div>
-      </div>
-      <div class="game">
-        <div><div class="no">4차전</div><div class="when">11/7 · 대구</div></div>
-        <div class="score">삼성 <span class="s">10</span> : 5 KT</div>
-        <div><span class="badge win">승</span></div>
-        <div class="memo">1회에만 6점을 뽑아내며 3연승. 박승규 4타수 3안타 3타점, 승리투수 이재희.</div>
-      </div>
-      <div class="game champ">
-        <div><div class="no">5차전 🏆</div><div class="when">11/8 · 대구</div></div>
-        <div class="score">삼성 <span class="s">12</span> : 1 KT</div>
-        <div><span class="badge win">우승</span></div>
-        <div class="memo">선발 원태인이 5이닝 1실점으로 승리투수, 페덱이 남은 4이닝을 무실점으로 막고 우승을 확정했어요.</div>
-      </div>
-    </div>
+    <h2>한국시리즈 경기별 기록</h2>
+    <p class="sub">보고 싶은 경기를 누르면 세부 기록이 펼쳐져요</p>
+    <div class="games" id="gameList"></div>
+    <p class="note" style="color:#cfe0ff">R 득점 · H 안타 · E 실책 · B 사사구(볼넷+몸에 맞는 공, 그 팀 타자들이 얻은 수)<br>※ 이닝별 점수와 R·H·E·B는 KBO 공식 스코어보드, 나머지는 언론 보도를 바탕으로 정리했어요.</p>
   </div>
 </section>
 
@@ -619,14 +881,26 @@
       <div class="player card pitcher">
         <div class="pos">투수 · 외국인</div>
         <b>페덱</b>
-        <div class="key">5차전 4이닝 무실점</div>
-        <p>원태인에 이어 6회부터 마지막까지 실점 없이 막고 우승의 순간을 지켰어요.</p>
+        <div class="key">2차전 7이닝 1실점 · 5차전 4이닝 퍼펙트</div>
+        <p>2차전 데일리 MVP. 5차전에서는 6회부터 12타자를 모두 잡아내며 세이브를 올리고 우승의 순간을 지켰어요.</p>
+      </div>
+      <div class="player card pitcher">
+        <div class="pos">투수 · 외국인</div>
+        <b>후라도</b>
+        <div class="key">3차전 7이닝 1실점 · 108구</div>
+        <p>홈 대구 첫 경기에서 7이닝을 버티며 1승 1패 뒤 흐름을 삼성 쪽으로 가져왔어요.</p>
+      </div>
+      <div class="player card">
+        <div class="pos">내야수</div>
+        <b>김영웅</b>
+        <div class="key">5차전 5타수 4안타 3타점</div>
+        <p>우승을 확정한 5차전에서 3회 역전 적시타와 8회 쐐기 타점까지 올렸어요.</p>
       </div>
       <div class="player card pitcher">
         <div class="pos">투수</div>
         <b>이재희</b>
-        <div class="key">4차전 승리투수</div>
-        <p>3연승을 완성한 4차전에서 승리투수가 됐어요.</p>
+        <div class="key">4차전 승리투수 · 데일리 MVP</div>
+        <p>4차전 5회 위기에 올라 2⅔이닝 동안 안타 없이 삼진 4개, 무실점으로 막았어요.</p>
       </div>
       <div class="player card">
         <div class="pos">포수 · 베테랑</div>
@@ -684,26 +958,6 @@
   </div>
 </section>
 
-<!-- 6. 우승 역사 -->
-<section id="history" style="padding-top:0">
-  <div class="wrap">
-    <h2>삼성의 우승 역사</h2>
-    <p class="sub">이제 반지가 9개!</p>
-    <div class="history">
-      <div class="ring">1985</div>
-      <div class="ring">2002</div>
-      <div class="ring">2005</div>
-      <div class="ring">2006</div>
-      <div class="ring">2011</div>
-      <div class="ring">2012</div>
-      <div class="ring">2013</div>
-      <div class="ring">2014</div>
-      <div class="ring now">2026</div>
-    </div>
-    <p class="note">※ 1985년은 전·후기 통합 우승으로 한국시리즈가 열리지 않았어요.</p>
-  </div>
-</section>
-
 <!-- 7. 축하 메시지 -->
 <section id="cheer" class="cheer" style="padding-top:0">
   <div class="wrap">
@@ -722,7 +976,7 @@
   <div class="wrap">
     <div class="sources card">
       <b>📰 참고한 기사</b>
-      <p style="color:var(--muted); margin:6px 0 10px">기록은 언론 보도를 바탕으로 정리했어요. 정확한 공식 기록은 KBO 홈페이지에서 확인해 주세요.</p>
+      <p style="color:var(--muted); margin:6px 0 10px">기록은 언론 보도와 KBO 기록을 바탕으로 정리했어요. 정확한 공식 기록은 KBO 홈페이지에서 확인해 주세요.</p>
       <ul>
         <li><a href="https://www.mt.co.kr/sports/2026/11/08/2026110817592781571" target="_blank">머니투데이 – 삼성, 12년 만에 한국시리즈 우승</a></li>
         <li><a href="https://biz.heraldcorp.com/article/10929738" target="_blank">헤럴드경제 – 삼성, kt 꺾고 12년 만에 한국시리즈 정상…V9</a></li>
@@ -738,13 +992,24 @@
         <li><a href="https://www.newspim.com/news/view/20261110000555" target="_blank">뉴스핌 – '실용·성과주의' 경영 통했다</a></li>
         <li><a href="https://mhnse.com/news/articleView.html?idxno=1691128" target="_blank">MHN스포츠 – 삼성이 직접 분석한 우승 비결</a></li>
         <li><a href="https://www.spotvnews.co.kr/news/articleView.html?idxno=800731" target="_blank">스포티비뉴스 – 이대형 해설에게 물었다, 삼성 우승 후보인가요?</a></li>
+        <li><a href="https://biz.heraldcorp.com/article/10924630" target="_blank">헤럴드경제 – 8점 차 리드에도 진땀…kt, KS 1차전 1점 차 승리</a></li>
+        <li><a href="https://www.kyeongin.com/article/1774049" target="_blank">경인일보 – kt wiz, 삼성 8-7로 잡고 KS 1차전 승리</a></li>
+        <li><a href="https://biz.heraldcorp.com/article/10926209" target="_blank">헤럴드경제 – '12회 결승점' 삼성, kt에 연장 혈투 승리</a></li>
+        <li><a href="https://www.kbmaeil.com/article/20261106500234" target="_blank">경북매일 – 삼성, KT에 5대 1 완승</a></li>
+        <li><a href="https://www.gukjenews.com/news/articleView.html?idxno=3744825" target="_blank">국제뉴스 – 한국시리즈 3차전 삼성 5-1 승리</a></li>
+        <li><a href="https://sports.khan.co.kr/article/202611071448003/" target="_blank">스포츠경향 – 1회 6득점, 1회말 최다 득점 기록 경신</a></li>
+        <li><a href="https://www.sportsworldi.com/newsView/20261108509660" target="_blank">스포츠월드 – 삼성, 5차전서 KT 12-1로 꺾고 12년 만에 우승</a></li>
+        <li><a href="https://www.mediapen.com/news/view/1136064" target="_blank">미디어펜 – 삼성 5차전서 끝냈다, 구자욱 MVP</a></li>
+        <li><a href="https://v.daum.net/v/20251027172618102" target="_blank">삼성 라이온즈 결산 – 2025시즌 성과와 과제</a></li>
+        <li><a href="https://www.koreabaseball.com/" target="_blank">KBO 공식 홈페이지 – 역대 순위·한국시리즈 기록</a></li>
+        <li><a href="https://eng.koreabaseball.com/Schedule/Scoreboard.aspx?searchDate=2026-11-08" target="_blank">KBO 공식 스코어보드 – 한국시리즈 이닝별 점수·안타·실책·사사구</a></li>
       </ul>
     </div>
   </div>
 </section>
 
 <footer>
-  삼성 라이온즈 팬이 만든 비공식 축하 페이지입니다 · 지능정보사회 과제
+  삼성 라이온즈 팬이 만든 비공식 우승 기록 페이지입니다 · 지능정보사회 과제
 </footer>
 
 <script>
@@ -797,6 +1062,173 @@
     requestAnimationFrame(draw);
   }
   draw();
+
+  // ===== 정규시즌 순위 그래프 =====
+  // [연도, 순위, 결과]  결과: 'c' = 우승, 'p' = 가을야구, 'x' = 가을야구 실패
+  const seasons = [
+    [2010, 2, 'p'], [2011, 1, 'c'], [2012, 1, 'c'], [2013, 1, 'c'], [2014, 1, 'c'], [2015, 1, 'p'],
+    [2016, 9, 'x'], [2017, 9, 'x'], [2018, 6, 'x'], [2019, 8, 'x'], [2020, 8, 'x'],
+    [2021, 2, 'p'], [2022, 7, 'x'], [2023, 8, 'x'], [2024, 2, 'p'], [2025, 4, 'p'], [2026, 2, 'c']
+  ];
+  const bars = document.getElementById("rankBars");
+  const years = document.getElementById("rankYears");
+  for (const [y, r, k] of seasons) {
+    const d = document.createElement("div");
+    d.className = "bar" + (k === "c" ? " champ" : k === "x" ? " low" : "");
+    d.title = y + "년 정규시즌 " + r + "위" + (k === "c" ? " · 한국시리즈 우승" : "");
+    d.innerHTML = "<b>" + r + "위</b><i style='height:" + ((11 - r) * 10) + "%'></i>";
+    bars.appendChild(d);
+    const t = document.createElement("span");
+    t.textContent = "'" + String(y).slice(2);
+    years.appendChild(t);
+  }
+
+  // ===== 한국시리즈 경기별 기록 =====
+  // ls: 이닝별 득점 [원정팀, 홈팀]  ('X' = 홈팀이 이겨서 공격하지 않음)
+  // tot: 팀 기록 [원정팀, 홈팀] 각각 { H: 안타, E: 실책, B: 사사구 }  (KBO 공식 스코어보드)
+  // 목록 글자 규칙: "팀|선수|기록" 또는 "선수|기록" 또는 "그냥 글"
+  // plays: [이닝, 삼성 공격이면 true, 설명]  — 설명 안의 **이름**은 굵게 표시돼요
+  const GAMES = [
+    {
+      no: "1차전", when: "11월 3일 · 수원 KT위즈파크", away: "삼성", home: "KT", win: false,
+      title: "0:8에서 7:8까지 쫓아간 아쉬운 1점 차 패배",
+      ls: [[0,0,0,0,0,0,5,2,0], [3,0,2,0,1,2,0,0,"X"]],
+      tot: [{ H: 10, E: 1, B: 2 }, { H: 10, E: 0, B: 8 }],
+      sp: ["삼성|최원태|2이닝 5실점 (3회 아웃 없이 강판)", "KT|대니엘|6이닝 5피안타 7탈삼진 3실점"],
+      dec: ["승|대니엘 (KT)|", "패|최원태 (삼성)|", "세|박영현 (KT)|9회 삼자 연속 삼진"],
+      hr: ["KT|안현민|3회 2점", "KT|한승택|5회 1점", "KT|김현수|6회 2점", "삼성|구자욱|7회 2점"],
+      star: ["KT|힐리어드|데일리 MVP · 4타수 3안타 2타점", "KT|대니엘|2회~6회 13타자 연속 범타"],
+      plays: [
+        ["1회말", false, "**최원태**의 연속 폭투 뒤 **힐리어드** 2타점 2루타, **김상수** 내야안타 → 0:3"],
+        ["3회말", false, "**안현민** 좌월 2점 홈런 → 0:5"],
+        ["5회말", false, "**한승택** 솔로 홈런 → 0:6"],
+        ["6회말", false, "**김현수** 우월 2점 홈런 → 0:8"],
+        ["7회초", true, "**구자욱** 2점 홈런, **류지혁** 땅볼 타점, **이재현** 2타점 적시타로 한 이닝 5점 → 5:8"],
+        ["8회초", true, "**김성윤** 적시타, **박영현** 폭투로 1점 더 → 7:8"],
+        ["9회초", true, "**박영현**이 **이재현**·**전병우**·**박승규**를 모두 삼진으로 잡고 경기 끝"]
+      ]
+    },
+    {
+      no: "2차전", when: "11월 4일 · 수원 KT위즈파크 · 연장 12회", away: "삼성", home: "KT", win: true,
+      title: "연장 12회, 상대 송구 실책으로 만든 결승점",
+      ls: [[0,1,0,0,0,0,0,0,0,1,0,1], [0,0,0,1,0,0,0,0,0,1,0,0]],
+      tot: [{ H: 14, E: 2, B: 4 }, { H: 11, E: 1, B: 3 }],
+      sp: ["삼성|페덱|7이닝 8피안타 1볼넷 3탈삼진 1실점", "KT|고영표|7이닝 7피안타 무사사구 4탈삼진 1실점"],
+      dec: ["승|김태훈 (삼성)|11회 1이닝 무실점", "패|오원석 (KT)|", "세|배찬승 (삼성)|12회 탈삼진 2개"],
+      hr: ["없음"],
+      star: ["삼성|페덱|데일리 MVP", "삼성|디아즈|6타수 4안타 2타점 · 홈런만 빠진 사이클링 히트"],
+      plays: [
+        ["2회초", true, "**최형우** 2루타 뒤 **디아즈** 우측 펜스 상단 맞는 3루타 → 1:0"],
+        ["4회말", false, "**힐리어드** 2루타, **허경민** 적시타 → 1:1"],
+        ["6회", true, "삼성 1사 만루 병살, KT 1사 2·3루 무득점 — 서로 기회를 놓쳤어요"],
+        ["10회초", true, "**디아즈** 우전 적시타 → 2:1"],
+        ["10회말", false, "1사 만루에서 **김현수** 밀어내기 볼넷 → 2:2"],
+        ["12회초", true, "1사 1·2루, **이재현** 땅볼 때 2루수 **오윤석**의 1루 송구가 빗나가 **디아즈** 홈인 → 3:2"],
+        ["12회말", false, "**배찬승**이 2사 2루에서 **김현수**를 2루 땅볼로 잡고 승리 (4시간 21분 혈투)"]
+      ]
+    },
+    {
+      no: "3차전", when: "11월 6일 · 대구 삼성라이온즈파크", away: "KT", home: "삼성", win: true,
+      title: "후라도 7이닝 1실점, 홈 대구에서 역전승",
+      ls: [[1,0,0,0,0,0,0,0,0], [1,3,0,0,0,0,0,1,"X"]],
+      tot: [{ H: 7, E: 0, B: 1 }, { H: 4, E: 0, B: 8 }],
+      sp: ["삼성|후라도|7이닝 6피안타 6탈삼진 1실점 (108구)", "KT|소형준|6이닝 4실점"],
+      dec: ["승|후라도 (삼성)|", "패|소형준 (KT)|", "마무리|김태훈 (삼성)|9회 등판"],
+      hr: ["삼성|박승규|8회 1점"],
+      star: ["삼성|구자욱|2회 2타점 3루타", "KT|소형준|2회 볼넷 3개 — KS 한 이닝 최다 볼넷 타이", "삼성은 안타 4개로 5점 — 사사구 8개를 잘 살렸어요"],
+      plays: [
+        ["1회초", false, "**김민혁** 2루타, **힐리어드** 적시 2루타 → 0:1"],
+        ["1회말", true, "**김지찬** 안타, **구자욱** 볼넷 뒤 **최형우** 적시타 → 1:1"],
+        ["2회말", true, "볼넷 3개로 만든 1사 만루, **김성윤** 땅볼 타점 + **구자욱** 2타점 3루타 → 4:1"],
+        ["8회말", true, "**박승규** 좌월 솔로 홈런 → 5:1"],
+        ["9회초", false, "**김태훈**이 **장성우**·**김상수**를 삼진으로 잡고 경기 끝"]
+      ]
+    },
+    {
+      no: "4차전", when: "11월 7일 · 대구 삼성라이온즈파크 · 관중 23,550명", away: "KT", home: "삼성", win: true,
+      title: "1회말 6득점, 포스트시즌 새 기록으로 3연승",
+      ls: [[1,0,0,0,3,0,0,1,0], [6,0,1,0,2,0,1,0,"X"]],
+      tot: [{ H: 4, E: 0, B: 7 }, { H: 11, E: 0, B: 12 }],
+      sp: ["삼성|장찬희|4이닝 2피안타 2볼넷 1실점", "KT|앨런|1이닝 5피안타 4사사구 6실점"],
+      dec: ["승|이재희 (삼성)|2⅔이닝 무안타 4탈삼진", "패|앨런 (KT)|"],
+      hr: ["KT|장진혁|1회 1점", "KT|김민혁|8회 대타 1점"],
+      star: ["삼성|이재희|데일리 MVP", "삼성|박승규|4타수 3안타 3타점", "1회말 6점 — KS·포스트시즌 1회말 최다 득점", "양 팀 사사구 19개 — KS 한 경기 최다"],
+      plays: [
+        ["1회초", false, "**장진혁** 우월 솔로 홈런 → 0:1"],
+        ["1회말", true, "**디아즈**·**김영웅** 연속 적시타, **류지혁** 몸에 맞는 공, **김도환** 뜬공을 우익수가 놓쳐 주자 3명 홈인 → 6:1"],
+        ["3회말", true, "**박승규** 적시타 → 7:1"],
+        ["5회초", false, "볼넷 5개로 3점, **김현수** 밀어내기 볼넷 → 7:4 · **이재희**가 올라와 불을 끔"],
+        ["5회말", true, "**박승규** 2타점 2루타 → 9:4"],
+        ["7회말", true, "**구자욱** 적시 2루타 → 10:4"],
+        ["8회초", false, "대타 **김민혁** 솔로 홈런 → 10:5"]
+      ]
+    },
+    {
+      no: "5차전 🏆", when: "11월 8일 · 대구 삼성라이온즈파크", away: "KT", home: "삼성", win: true, champ: true,
+      title: "5회 8득점 빅이닝, 페덱 4이닝 퍼펙트로 우승 확정",
+      ls: [[0,0,1,0,0,0,0,0,0], [0,0,3,0,8,0,0,1,"X"]],
+      tot: [{ H: 4, E: 2, B: 2 }, { H: 14, E: 0, B: 3 }],
+      sp: ["삼성|원태인|5이닝 4피안타 2볼넷 5탈삼진 1실점", "KT|대니엘|3이닝 5피안타 2볼넷 3실점"],
+      dec: ["승|원태인 (삼성)|KS 첫 승", "패|대니엘 (KT)|", "세|페덱 (삼성)|4이닝 퍼펙트"],
+      hr: ["없음"],
+      star: ["삼성|김영웅|5타수 4안타 3타점", "삼성|구자욱|5타수 3안타 1타점 2득점 · 시리즈 MVP", "삼성|페덱|6회부터 12타자 연속 아웃"],
+      plays: [
+        ["3회초", false, "1사 2·3루에서 **장진혁** 희생플라이 → 0:1"],
+        ["3회말", true, "**구자욱** 동점 2루타, **디아즈** 역전 적시타, **김영웅** 적시타 → 3:1"],
+        ["5회말", true, "**최형우**·**김영웅**·**이재현** 연속 타점, 상대 실책 2개, **김지찬** 2타점 3루타, 폭투까지 한 이닝 8점 → 11:1"],
+        ["8회말", true, "**김영웅** 적시타 → 12:1"],
+        ["9회초", false, "**페덱**이 삼자범퇴, 마지막 타자 **장성우** 삼진 — 12년 만의 우승 확정! 🎉"]
+      ]
+    }
+  ];
+
+  const gameList = document.getElementById("gameList");
+  const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  // "팀|선수|기록" → 팀 꼬리표 + 굵은 이름 + 연한 기록
+  const item = (t) => {
+    const p = t.split("|");
+    if (p.length === 1) return "<li><span class='rec'>" + esc(p[0]) + "</span></li>";
+    const [tag, name, rec] = p.length === 3 ? p : [null, p[0], p[1]];
+    const cls = tag === "삼성" || /\(삼성\)/.test(name) ? " ss" : "";
+    return "<li>" + (tag ? "<span class='team" + cls + "'>" + esc(tag) + "</span>" : "") +
+      "<span class='pn'>" + esc(name) + "</span>" + (rec ? "<span class='rec'>" + esc(rec) + "</span>" : "") + "</li>";
+  };
+  const itemList = (arr) => arr.map(item).join("");
+  const total = (r) => r.reduce((a, v) => a + (typeof v === "number" ? v : 0), 0);
+
+  for (const g of GAMES) {
+    const inns = g.ls[0].length;
+    let head = "<tr><th>팀</th>";
+    for (let i = 1; i <= inns; i++) head += "<th>" + i + "</th>";
+    head += "<th class='k'>R</th><th>H</th><th>E</th><th>B</th></tr>";
+    const row = (name, r, t) => "<tr><td>" + name + "</td>" +
+      r.map((v) => "<td" + (typeof v === "number" && v > 0 ? " class='hit'" : "") + ">" + v + "</td>").join("") +
+      "<td class='r'>" + total(r) + "</td><td>" + t.H + "</td><td>" + t.E + "</td><td>" + t.B + "</td></tr>";
+    const sam = g.away === "삼성" ? 0 : 1;
+    const sScore = total(g.ls[sam]), oScore = total(g.ls[1 - sam]);
+    const box = (title, arr) => "<div class='gm-box'><h4>" + title + "</h4><ul>" + itemList(arr) + "</ul></div>";
+    const el = document.createElement("details");
+    el.className = "gm" + (g.champ ? " champ" : "");
+    el.innerHTML =
+      "<summary>" + g.no + "</summary>" +
+      "<div class='gm-body'>" +
+        "<div class='gm-top'><span class='when'>" + g.when + "</span>" +
+        "<span class='score'>삼성 " + (g.win ? "<span class='s'>" + sScore + "</span>" : sScore) + " : " +
+        (g.win ? oScore : "<span class='s'>" + oScore + "</span>") + " KT " +
+        "<span class='badge " + (g.win ? "win" : "lose") + "'>" + (g.champ ? "우승" : g.win ? "승" : "패") + "</span></span></div>" +
+        "<div class='gm-title'>" + g.title + "</div>" +
+        "<div class='ls-wrap'><table class='ls'>" + head + row(g.away, g.ls[0], g.tot[0]) + row(g.home, g.ls[1], g.tot[1]) + "</table></div>" +
+        "<div class='gm-grid'>" +
+          box("⚾ 선발 투수", g.sp) + box("🏅 승 · 패 · 세이브", g.dec) +
+          box("💥 홈런", g.hr) + box("⭐ 주요 기록", g.star) +
+        "</div>" +
+        "<div class='plays-box'><h4>📋 득점 장면</h4><ol class='plays'>" +
+          g.plays.map(([inn, isSam, t]) => "<li class='" + (isSam ? "sam" : "") + "'><span class='inn'>" + inn + "</span><span>" +
+            esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>") + "</span></li>").join("") +
+        "</ol></div>" +
+      "</div>";
+    gameList.appendChild(el);
+  }
 
   // ===== 축하 메시지 (내 컴퓨터 브라우저에 저장) =====
   const list = document.getElementById("messages");
