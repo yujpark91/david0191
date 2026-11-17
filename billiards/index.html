@@ -2259,6 +2259,25 @@ function bindStepper(root, get, set) {
 const NET = { peer: null, conn: null, host: false, code: '', myName: '', oppName: '', settings: { table: '3c', target: 10, three: 0 }, queue: [], aimT: null };
 const PEER_PREFIX = 'dangudojeon-v1-';
 const CODE_CH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+// 중계(TURN) 서버: 직접 연결이 막힐 때(핸드폰 LTE/5G 등) 데이터를 대신 전달해 줘요.
+// metered.ca 무료 가입 → 대시보드의 앱 이름과 API Key를 아래에 넣으세요. 비워 두면 직접 연결만 시도해요.
+const TURN_APP = '';   // 예: 'myapp'  (주소가 myapp.metered.live 라면)
+const TURN_KEY = '';   // 예: 'abcd1234...'
+const STUN_ONLY = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' },
+  // 가입 없이 쓰는 공개 중계 서버 (무료라 느리거나 막혀 있을 수 있어요)
+  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'],
+    username: 'openrelayproject', credential: 'openrelayproject' }];
+let ICE = null;
+function loadIce(cb) {
+  if (ICE) { cb(); return; }
+  if (!TURN_APP || !TURN_KEY) { ICE = STUN_ONLY; cb(); return; }
+  fetch('https://' + TURN_APP + '.metered.live/api/v1/turn/credentials?apiKey=' + encodeURIComponent(TURN_KEY))
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(list => { ICE = Array.isArray(list) && list.length ? STUN_ONLY.concat(list) : STUN_ONLY; })
+    .catch(() => { ICE = STUN_ONLY; })
+    .then(cb);
+}
+function peerOpts() { return { config: { iceServers: ICE || STUN_ONLY } }; }
 function netSend(m) { if (NET.conn && NET.conn.open) { try { NET.conn.send(m); } catch (e) {} } }
 function packBalls() { return S.balls.map(b => [b.x, b.y, b.q[0], b.q[1], b.q[2], b.q[3]]); }
 function unpackBalls(arr) {
@@ -2357,11 +2376,11 @@ function netClose() {
   if (p) setTimeout(() => { try { p.destroy(); } catch (e) {} }, 300);
 }
 function loadPeer(cb) {
-  if (window.Peer) { cb(); return; }
+  if (window.Peer) { loadIce(cb); return; }
   onMsg('연결 준비 중…');
   const s = document.createElement('script');
   s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
-  s.onload = cb; s.onerror = () => onMsg('연결 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', true);
+  s.onload = () => loadIce(cb); s.onerror = () => onMsg('연결 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', true);
   document.head.appendChild(s);
 }
 function onMsg(t, bad) { $('onMsg').textContent = t || ''; $('onMsg').classList.toggle('bad', !!bad); }
@@ -2376,7 +2395,7 @@ function onCreate() {
     netClose(); NET.host = true;
     let code = ''; for (let i = 0; i < 5; i++) code += CODE_CH[Math.floor(Math.random() * CODE_CH.length)];
     NET.code = code;
-    const peer = NET.peer = new window.Peer(PEER_PREFIX + code);
+    const peer = NET.peer = new window.Peer(PEER_PREFIX + code, peerOpts());
     onMsg('방 만드는 중…');
     peer.on('open', () => { if (NET.peer !== peer) return; NET.code = code; onMsg('친구에게 방 코드를 알려 주세요. 친구가 들어오면 [게임 시작]을 누르세요.'); paintOnline(); });
     peer.on('connection', c => {
@@ -2398,10 +2417,16 @@ function onJoin() {
   NET.myName = readMyName('참가자');
   loadPeer(() => {
     netClose(); NET.host = false;
-    const peer = NET.peer = new window.Peer();
+    const peer = NET.peer = new window.Peer(peerOpts());
     NET.code = code;
     onMsg('방 찾는 중…');
     peer.on('open', () => { if (NET.peer !== peer) return; netBind(peer.connect(PEER_PREFIX + code, { reliable: true })); });
+    // 15초 안에 연결이 안 되면 멈춘 채로 두지 않고 안내
+    setTimeout(() => {
+      if (NET.peer !== peer || (NET.conn && NET.conn.open)) return;
+      netClose(); paintOnline();
+      onMsg('연결이 안 돼요. 두 기기를 같은 와이파이에 연결하거나 잠시 뒤 다시 해 보세요.', true);
+    }, 15000);
     peer.on('error', e => {
       if (NET.peer !== peer) return;
       onMsg(e.type === 'peer-unavailable' ? '그 코드의 방을 찾을 수 없어요. 코드를 다시 확인해 주세요.' : '연결 오류가 났어요 (' + (e.type || '알 수 없음') + ').', true);
