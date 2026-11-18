@@ -45,26 +45,25 @@
     box-shadow: 0 8px 24px rgba(7,76,161,.08);
   }
 
-  /* ===== 위쪽 메뉴 ===== */
-  nav {
+  [hidden] { display: none !important; }
+
+  /* ===== 카드를 눌렀을 때 맨 위 '목록으로' 줄 ===== */
+  .backbar {
     position: sticky; top: 0; z-index: 10;
-    background: rgba(4,48,106,.95);
+    background: rgba(4,48,106,.96);
     backdrop-filter: blur(6px);
+    color: #fff;
   }
-  nav .wrap {
-    display: flex; gap: 4px;
-    overflow-x: auto;
-    padding: 0 8px;
-  }
-  nav a {
-    color: #dfeaff;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 14px 12px;
+  .backbar .wrap { display: flex; align-items: center; gap: 14px; padding: 10px 16px; }
+  .backbar .back {
+    color: #fff; text-decoration: none; font-weight: 800; font-size: 15px;
+    padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.12);
     white-space: nowrap;
   }
-  nav a:hover { color: var(--gold); }
+  .backbar .back:hover, .backbar .back:focus-visible { background: var(--gold); color: #3a2a00; outline: none; }
+  .backbar .now { font-weight: 800; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.detail [data-view] { padding-top: 48px !important; }
+  body.detail .chapter-head { padding: 40px 16px !important; }
 
   /* ===== 맨 위 큰 화면 ===== */
   .hero {
@@ -107,60 +106,28 @@
     pointer-events: none;
   }
 
-  /* ===== 서비스 기능 Bento Grid ===== */
-  .bento {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-  }
-  .bento .big { grid-column: span 2; grid-row: span 2; }
-
-  /* 큰 카드 */
-  .feature.big {
-    display: flex;
-    flex-direction: column;
-    padding: 32px 28px;
-    min-height: 340px;
-  }
-  .feature.big .icon { width: 72px; height: 72px; font-size: 38px; }
-  .feature.big h3 { font-size: 28px; }
-  .feature.big p { font-size: 16px; }
-  .feature.big .go { margin-top: auto; padding-top: 18px; }
-  .feature.games {
-    background: linear-gradient(145deg, var(--blue), var(--blue-dark));
-    color: #fff;
-  }
-  .feature.games h3, .feature.games .go { color: #fff; }
-  .feature.games p { color: #cfe0ff; }
-  .feature.games .icon { background: rgba(255,255,255,.15); }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
-  .chips span {
-    font-size: 14px; font-weight: 700;
-    padding: 6px 12px; border-radius: 10px;
-    background: rgba(255,255,255,.12);
-  }
-  .chips span.win { background: var(--gold); color: #3a2a00; }
-  .preview {
+  /* ===== 목록: 반응형 카드 (데스크톱 3열 · 태블릿 2열 · 모바일 1열) ===== */
+  .menu {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 20px;
+    gap: 20px;
   }
-  .preview div { background: var(--bg); border-radius: 12px; padding: 12px 6px; text-align: center; }
-  .preview b { display: block; font-family: "Black Han Sans", sans-serif; font-size: 26px; color: var(--blue); }
-  .preview small { color: var(--muted); font-weight: 700; }
-
-  /* 태블릿: 2열 */
-  @media (max-width: 860px) {
-    .bento { grid-template-columns: repeat(2, 1fr); }
-    .bento .big { grid-row: auto; }
+  @media (max-width: 900px) { .menu { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .menu { grid-template-columns: 1fr; gap: 14px; } }
+  .menu .feature { display: flex; flex-direction: column; }
+  .menu .feature .go { margin-top: auto; padding-top: 14px; }
+  .menu .feature .tag {
+    align-self: flex-start;
+    font-size: 12px; font-weight: 900;
+    padding: 3px 10px; border-radius: 999px;
+    background: #e6efff; color: var(--blue);
+    margin-bottom: 8px;
   }
-  /* 모바일: 1열 */
-  @media (max-width: 600px) {
-    .bento { grid-template-columns: 1fr; gap: 14px; }
-    .bento .big { grid-column: auto; }
-    .feature.big { min-height: 0; }
-  }
+  .menu .feature.hot { background: linear-gradient(145deg, var(--blue), var(--blue-dark)); }
+  .menu .feature.hot h3, .menu .feature.hot .go { color: #fff; }
+  .menu .feature.hot p { color: #cfe0ff; }
+  .menu .feature.hot .icon { background: rgba(255,255,255,.15); }
+  .menu .feature.hot .tag { background: var(--gold); color: #3a2a00; }
 
   .feature {
     display: block;
@@ -225,7 +192,7 @@
   .step h3 { font-size: 22px; margin-bottom: 4px; }
   .step .big { font-family: "Black Han Sans", sans-serif; font-size: 34px; color: var(--blue); }
   .step.final-step .big { color: var(--gold); }
-  .step p { font-size: 15px; opacity: .85; }
+  .step p { font-size: 15px; opacity: .85; margin-top: 8px; }
   .mini { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .mini span {
     font-size: 13px; font-weight: 700;
@@ -318,42 +285,59 @@
   }
 
   /* ===== 선수별 기록 ===== */
-  .mvp {
-    padding: 32px 24px;
+  /* 선수별 기록 Bento Grid: 구자욱 큰 카드 + 나머지 작은 카드 */
+  .players {
     display: grid;
-    grid-template-columns: 1fr 1.3fr;
-    gap: 24px;
-    align-items: center;
-    border: 3px solid var(--gold);
-    margin-bottom: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
   }
-  @media (max-width: 640px) { .mvp { grid-template-columns: 1fr; text-align: center; } }
+  .players .big { grid-column: span 2; grid-row: span 2; align-self: stretch; }
+  .players .wide { grid-column: span 2; }
+  @media (max-width: 860px) {
+    .players { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .players { grid-template-columns: 1fr; gap: 12px; }
+    .players .big, .players .wide { grid-column: auto; grid-row: auto; }
+  }
+
+  .mvp {
+    padding: 30px 28px;
+    display: flex; flex-direction: column;
+    background: linear-gradient(145deg, var(--blue), var(--blue-dark));
+    color: #fff;
+    border: 3px solid var(--gold);
+  }
   .mvp-badge {
+    align-self: flex-start;
     display: inline-block;
     background: var(--gold); color: #3a2a00;
     font-weight: 900; padding: 6px 16px; border-radius: 999px;
   }
-  .mvp-name { font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: 54px; color: var(--blue); line-height: 1.2; }
+  .mvp-name { font-family: "Noto Sans KR", sans-serif; font-weight: 800; font-size: clamp(44px, 7vw, 60px); color: #fff; line-height: 1.15; margin-top: 14px; }
+  .mvp-role { color: #cfe0ff; font-weight: 700; }
+  .mvp-line { margin-top: 10px; font-size: 16px; color: #dfeaff; }
+  .mvp-line b { color: var(--gold); font-size: 20px; }
+  .mvp-hint { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 700; color: var(--gold); }
+  .mvp.open .mvp-hint { display: none; }
+  .mvp > div:first-child { display: flex; flex-direction: column; }
   .mvp-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
+    margin-top: 18px;
   }
   .mvp-stats div {
-    background: var(--bg);
+    background: rgba(255,255,255,.1);
     border-radius: 12px;
     padding: 12px 6px;
     text-align: center;
   }
-  .mvp-stats b { display: block; font-family: "Black Han Sans", sans-serif; font-size: 28px; color: var(--blue); }
-  .mvp-stats small { color: var(--muted); font-weight: 700; }
-  .mvp-note { grid-column: 1 / -1; color: var(--muted); font-size: 15px; }
+  .mvp-stats b { display: block; font-family: "Black Han Sans", sans-serif; font-size: 28px; color: var(--gold); }
+  .mvp-stats small { color: #cfe0ff; font-weight: 700; }
+  .mvp-note { color: #dfeaff; font-size: 15px; margin-top: 14px; }
+  .mvp.tap .plus::after { opacity: .7; }
 
-  .players {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-  }
   .player { padding: 22px; border-left: 6px solid var(--sky); }
   .player.pitcher { border-left-color: var(--red); }
   .player .pos { font-size: 13px; font-weight: 900; color: var(--muted); }
@@ -374,8 +358,8 @@
     font-size: 80px; color: var(--sky); opacity: .35;
     font-family: Georgia, serif;
   }
-  .quote h3 { font-size: 19px; color: var(--blue); margin-bottom: 8px; position: relative; }
-  .quote p { font-size: 15px; }
+  .quote h3 { font-size: 19px; color: var(--blue); position: relative; }
+  .quote p { font-size: 15px; margin-top: 4px; }
   .quote .who { margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
 
   /* ===== 우승 역사 ===== */
@@ -441,6 +425,54 @@
     .era::before { left: -27px; }
     .era { padding: 20px 18px; }
   }
+
+  /* ===== 공통: 마우스 올리거나 누르면 펼쳐지는 카드 ===== */
+  .reveal { cursor: pointer; outline: none; transition: box-shadow .25s ease, transform .25s ease; }
+  .reveal .more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+  .reveal .more > div { overflow: hidden; }
+  .reveal:hover .more, .reveal:focus-within .more { grid-template-rows: 1fr; }
+  .reveal:hover, .reveal:focus-within { box-shadow: 0 14px 30px rgba(7,76,161,.18); transform: translateY(-2px); }
+  .reveal .plus::after { content: " ＋"; font-size: .7em; opacity: .55; font-weight: 700; }
+  .reveal:hover .plus::after, .reveal:focus-within .plus::after { content: " −"; }
+  .road, .quotes { align-items: start; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal .more { transition: none; }
+    .reveal:hover, .reveal:focus-within { transform: none; }
+  }
+
+  /* ===== 공통: 누르면 펼쳐지는 카드 ===== */
+  .tap { cursor: pointer; transition: box-shadow .25s ease; }
+  .tap:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+  .tap .more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+  .tap .more > div { overflow: hidden; }
+  .tap.open .more { grid-template-rows: 1fr; }
+  .tap.open { box-shadow: 0 14px 30px rgba(7,76,161,.18); }
+  .tap .plus::after { content: " ＋"; font-size: .7em; opacity: .55; font-weight: 700; }
+  .tap.open .plus::after { content: " −"; }
+  @media (prefers-reduced-motion: reduce) { .tap, .tap .more { transition: none; } }
+
+  /* ===== 전체 선수 기록 표 ===== */
+  .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+  .tabs button { font: inherit; font-weight: 800; font-size: 15px; padding: 10px 22px; border-radius: 999px; border: 2px solid var(--blue); background: var(--card); color: var(--blue); cursor: pointer; }
+  .tabs button.on { background: var(--blue); color: #fff; }
+  .stat-wrap { overflow-x: auto; }
+  .st { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; white-space: nowrap; text-align: right; }
+  .st th, .st td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .st th { background: #e9f0fb; color: var(--blue-dark); font-size: 13px; font-weight: 800; }
+  .st th:hover { background: #d8e5f8; }
+  .st th button { all: unset; cursor: pointer; }
+  .st th button:focus-visible { outline: 2px solid var(--sky); border-radius: 4px; }
+  .st th.sorted { background: var(--blue); color: #fff; }
+  .st th.sorted button::after { content: " ▼"; font-size: 10px; }
+  .st th.sorted.asc button::after { content: " ▲"; }
+  .st td.sorted { background: #f2f6fd; font-weight: 800; color: var(--blue); }
+  .st th:first-child, .st td:first-child { position: sticky; left: 0; text-align: left; z-index: 1; border-right: 1px solid var(--line); }
+  .st td:first-child { background: var(--card); font-weight: 800; color: var(--text); }
+  .st th.sorted:first-child { background: var(--blue); }
+  .st tbody tr:hover td { background: #f7faff; }
+  .st tbody tr:last-child td { border-bottom: none; }
+  .st-help { display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: center; margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .st-help b { color: var(--text); }
 
   /* ===== 순위 그래프 ===== */
   .ranks { padding: 24px 18px 16px; }
@@ -512,7 +544,7 @@
 <body>
 
 <!-- 맨 위 큰 화면 -->
-<header class="hero">
+<header class="hero" data-home>
   <canvas id="confetti"></canvas>
   <div>
     <div class="trophy">🏆</div>
@@ -522,76 +554,77 @@
   </div>
 </header>
 
-<!-- 메뉴 -->
-<nav>
+<!-- 카드를 눌렀을 때만 보이는 '목록으로' 줄 -->
+<div class="backbar" id="backbar" hidden>
   <div class="wrap">
-    <a href="#features">기능</a>
-    <a href="#history">우승 반지</a>
-    <a href="#story">연대기</a>
-    <a href="#ranks">순위 변화</a>
-    <a href="#summary">2026 한눈에</a>
-    <a href="#postseason">포스트시즌</a>
-    <a href="#games">경기 기록</a>
-    <a href="#players">선수 기록</a>
-    <a href="#experts">전문가 평가</a>
-    <a href="#cheer">축하 메시지</a>
+    <a class="back" href="#menu">← 목록으로</a>
+    <span class="now" id="viewTitle"></span>
   </div>
-</nav>
+</div>
 
-<!-- 0. 서비스 기능 -->
-<section id="features">
+<!-- 0. 목록: 카드를 누르면 그 내용만 한 화면에 보여요 -->
+<section id="menu" data-home>
   <div class="wrap">
-    <h2>이 사이트에서 볼 수 있어요</h2>
-    <p class="sub">카드를 누르면 해당 내용으로 이동해요</p>
-    <div class="bento">
-      <!-- 큰 카드: 핵심 기능 -->
-      <a class="feature card big games" href="#story">
+    <div class="menu">
+      <a class="feature card" href="#history" data-title="우승 반지">
+        <div class="icon">💍</div>
+        <span class="tag">1985 – 2026</span>
+        <h3>우승 반지</h3>
+        <p>1985년부터 2026년까지 모은 우승 반지 9개</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#story" data-title="우승 연대기">
         <div class="icon">📜</div>
+        <span class="tag">일곱 장면</span>
         <h3>우승 연대기</h3>
-        <p>1982년 창단부터 2026년 우승까지, 삼성의 45년을 일곱 장면으로 따라가 봐요.</p>
-        <div class="chips">
-          <span class="win">1985 첫 우승</span>
-          <span>KS 7전 7패</span>
-          <span class="win">2002 첫 KS 우승</span>
-          <span class="win">2011~14 왕조</span>
-          <span>2016~20 암흑기</span>
-          <span class="win">2026 V9 🏆</span>
-        </div>
-        <span class="go">연대기 보러 가기 →</span>
+        <p>창단부터 V9까지, 삼성의 45년을 일곱 장면으로</p>
+        <span class="go">보러 가기 →</span>
       </a>
-      <a class="feature card big" href="#players">
-        <div class="icon">⭐</div>
-        <h3>선수별 기록</h3>
-        <p>2026년 MVP 구자욱부터 박승규, 디아즈, 원태인까지 우승을 이끈 선수들의 활약을 정리했어요.</p>
-        <div class="preview">
-          <div><b>.500</b><small>MVP 타율</small></div>
-          <div><b>6</b><small>타점</small></div>
-          <div><b>74%</b><small>MVP 득표</small></div>
-        </div>
-        <span class="go">선수 기록 보러 가기 →</span>
-      </a>
-
-      <!-- 작은 카드: 나머지 기능 -->
-      <a class="feature card" href="#ranks">
+      <a class="feature card" href="#ranks" data-title="정규시즌 순위 변화">
         <div class="icon">📈</div>
+        <span class="tag">2010 – 2026</span>
         <h3>순위 변화</h3>
         <p>왕조에서 암흑기, 다시 정상까지 한눈에</p>
         <span class="go">보러 가기 →</span>
       </a>
-      <a class="feature card" href="#games">
-        <div class="icon">⚾</div>
-        <h3>2026 경기 기록</h3>
-        <p>한국시리즈 1~5차전 다시 보기</p>
+      <a class="feature card hot" href="#season2026" data-title="2026 우승 한눈에">
+        <div class="icon">🏆</div>
+        <span class="tag">V9</span>
+        <h3>2026 우승 한눈에</h3>
+        <p>숫자로 보는 우승과 포스트시즌 7승 3패의 길</p>
         <span class="go">보러 가기 →</span>
       </a>
-      <a class="feature card" href="#experts">
+      <a class="feature card" href="#games" data-title="한국시리즈 경기별 기록">
+        <div class="icon">⚾</div>
+        <span class="tag">1 – 5차전</span>
+        <h3>경기 기록</h3>
+        <p>한국시리즈 이닝별 점수와 득점 장면</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#players" data-title="선수별 기록">
+        <div class="icon">⭐</div>
+        <span class="tag">MVP 구자욱</span>
+        <h3>선수별 기록</h3>
+        <p>MVP 구자욱부터 우승을 이끈 주역들까지</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#allstats" data-title="전체 선수 기록">
+        <div class="icon">📊</div>
+        <span class="tag">타자 16 · 투수 12</span>
+        <h3>전체 선수 기록</h3>
+        <p>모든 선수의 시리즈 기록, 눌러서 순서대로 정렬</p>
+        <span class="go">보러 가기 →</span>
+      </a>
+      <a class="feature card" href="#experts" data-title="전문가들의 평가">
         <div class="icon">🎙️</div>
+        <span class="tag">우승 비결</span>
         <h3>전문가 평가</h3>
         <p>언론과 구단이 꼽은 12년 만의 우승 비결</p>
         <span class="go">보러 가기 →</span>
       </a>
-      <a class="feature card" href="#cheer">
+      <a class="feature card" href="#cheer" data-title="축하 메시지 남기기">
         <div class="icon">💌</div>
+        <span class="tag">직접 쓰기</span>
         <h3>축하 메시지</h3>
         <p>우승 축하 한마디를 직접 남겨 보세요</p>
         <span class="go">보러 가기 →</span>
@@ -601,7 +634,7 @@
 </section>
 
 <!-- 우승 반지 -->
-<section id="history" style="padding-top:0">
+<section id="history" data-view="history" hidden style="padding-top:0">
   <div class="wrap">
     <h2>삼성의 우승 역사</h2>
     <p class="sub">1985년부터 2026년까지 모은 우승 반지 9개</p>
@@ -621,7 +654,7 @@
 </section>
 
 <!-- 우승 연대기 -->
-<section id="story" style="padding-top:0">
+<section id="story" data-view="story" hidden style="padding-top:0">
   <div class="wrap">
     <h2>우승 연대기</h2>
     <p class="sub">1982년 창단부터 2026년까지, 일곱 장면으로 보는 삼성<br>카드에 마우스를 올리면 (핸드폰은 누르면) 자세한 기록이 보여요</p>
@@ -731,7 +764,7 @@
           <span>MVP 구자욱</span>
           <span>감독 박진만</span>
         </div>
-        <a class="go" href="#summary">2026년 우승 자세히 보기 ↓</a>
+        <a class="go" href="#season2026">2026년 우승 자세히 보기 →</a>
         </div></div>
       </div>
 
@@ -740,7 +773,7 @@
 </section>
 
 <!-- 순위 변화 -->
-<section id="ranks" style="padding-top:0">
+<section id="ranks" data-view="ranks" hidden style="padding-top:0">
   <div class="wrap">
     <h2>정규시즌 순위 변화</h2>
     <p class="sub">2010년부터 2026년까지 · 막대가 높을수록 순위가 높아요</p>
@@ -757,14 +790,14 @@
 </section>
 
 <!-- 2026 우승 이야기 시작 -->
-<div class="chapter-head">
+<div class="chapter-head" id="season2026" data-view="season2026" hidden>
   <div class="k">CHAPTER 2026</div>
   <h2>2026년, 12년 만의 우승</h2>
   <p>여기부터는 2026년 우승 시즌을 자세히 정리했어요</p>
 </div>
 
 <!-- 1. 숫자로 보는 우승 -->
-<section id="summary">
+<section id="summary" data-view="season2026" hidden>
   <div class="wrap">
     <h2>숫자로 보는 우승</h2>
     <p class="sub">2026년 11월 8일, 대구에서 우승을 확정했어요</p>
@@ -778,21 +811,24 @@
 </section>
 
 <!-- 2. 포스트시즌 성적 -->
-<section id="postseason" style="padding-top:0">
+<section id="postseason" style="padding-top:0" data-view="season2026" hidden>
   <div class="wrap">
     <h2>포스트시즌 성적</h2>
-    <p class="sub">정규시즌 2위에서 시작해 우승까지 · 포스트시즌 합계 <b>7승 3패</b></p>
+    <p class="sub">정규시즌 2위에서 시작해 우승까지 · 포스트시즌 합계 <b>7승 3패</b><br>카드에 마우스를 올리면 (핸드폰은 누르면) 경기 결과가 보여요</p>
     <div class="road">
-      <div class="step card">
+      <div class="step card reveal" tabindex="0">
         <span class="tag">정규시즌</span>
-        <h3>2위</h3>
+        <h3 class="plus">2위</h3>
         <div class="big">83승 3무 58패</div>
+        <div class="more"><div>
         <p>2위 자격으로 와일드카드·준플레이오프 없이 플레이오프로 바로 올라갔어요.</p>
+        </div></div>
       </div>
-      <div class="step card">
+      <div class="step card reveal" tabindex="0">
         <span class="tag">플레이오프 (5전 3승제)</span>
-        <h3>vs KIA 타이거즈</h3>
+        <h3 class="plus">vs KIA 타이거즈</h3>
         <div class="big">3승 2패</div>
+        <div class="more"><div>
         <p>5차전 6:1 승리로 2년 만에 한국시리즈 진출!</p>
         <div class="mini">
           <span class="l">1차전 1:5</span>
@@ -801,11 +837,13 @@
           <span class="l">4차전 2:4</span>
           <span class="w">5차전 6:1</span>
         </div>
+        </div></div>
       </div>
-      <div class="step card final-step">
+      <div class="step card reveal final-step" tabindex="0">
         <span class="tag">한국시리즈 (7전 4승제)</span>
-        <h3>vs KT 위즈</h3>
+        <h3 class="plus">vs KT 위즈</h3>
         <div class="big">4승 1패 🏆</div>
+        <div class="more"><div>
         <p>정규시즌 1위 KT를 꺾은 업셋 우승. 2018년 SK 이후 8년 만이에요.</p>
         <div class="mini">
           <span class="l">1차전 7:8</span>
@@ -814,6 +852,7 @@
           <span class="w">4차전 10:5</span>
           <span class="w">5차전 12:1</span>
         </div>
+        </div></div>
       </div>
     </div>
     <p class="note">※ 점수는 모두 삼성 점수를 앞에 적었어요.</p>
@@ -821,7 +860,7 @@
 </section>
 
 <!-- 3. 한국시리즈 경기 기록 -->
-<section id="games" class="final">
+<section id="games" data-view="games" hidden class="final">
   <div class="wrap">
     <h2>한국시리즈 경기별 기록</h2>
     <p class="sub">보고 싶은 경기를 누르면 세부 기록이 펼쳐져요</p>
@@ -831,135 +870,186 @@
 </section>
 
 <!-- 4. 선수별 기록 -->
-<section id="players">
+<section id="players" data-view="players" hidden>
   <div class="wrap">
     <h2>선수별 기록</h2>
-    <p class="sub">한국시리즈를 빛낸 선수들</p>
-
-    <div class="mvp card">
-      <div>
-        <span class="mvp-badge">⭐ 한국시리즈 MVP</span>
-        <div class="mvp-name">구자욱</div>
-        <p>주장 · 외야수</p>
-      </div>
-      <div class="mvp-stats">
-        <div><b>.500</b><small>타율</small></div>
-        <div><b>10</b><small>안타 (20타수)</small></div>
-        <div><b>1</b><small>홈런</small></div>
-        <div><b>6</b><small>타점</small></div>
-        <div><b>5</b><small>득점</small></div>
-        <div><b>3</b><small>볼넷</small></div>
-      </div>
-      <p class="mvp-note">허벅지 뒤 근육 부상을 안고도 5경기 모두 출전해 매 경기 안타를 쳤어요. 기자단 투표 97표 중 72표(74.2%)를 받아 생애 첫 한국시리즈 MVP에 올랐어요.</p>
-    </div>
+    <p class="sub">한국시리즈를 빛낸 선수들<br>카드를 누르면 기록이 보이고, 한 번 더 누르면 접혀요</p>
 
     <div class="players">
-      <div class="player card">
+      <div class="mvp card tap big" tabindex="0">
+        <div>
+          <span class="mvp-badge">⭐ 한국시리즈 MVP</span>
+          <div class="mvp-name plus">구자욱</div>
+          <p class="mvp-role">주장 · 외야수</p>
+          <p class="mvp-line">타율 <b>.500</b> · 5경기 연속 안타 · 생애 첫 KS MVP</p>
+          <span class="mvp-hint">누르면 시리즈 기록 보기</span>
+        </div>
+        <div class="more"><div>
+        <div class="mvp-stats">
+          <div><b>.500</b><small>타율</small></div>
+          <div><b>10</b><small>안타 (20타수)</small></div>
+          <div><b>1</b><small>홈런</small></div>
+          <div><b>6</b><small>타점</small></div>
+          <div><b>5</b><small>득점</small></div>
+          <div><b>3</b><small>볼넷</small></div>
+        </div>
+        <p class="mvp-note">허벅지 뒤 근육 부상을 안고도 5경기 모두 출전해 매 경기 안타를 쳤어요. 기자단 투표 97표 중 72표(74.2%)를 받아 생애 첫 한국시리즈 MVP에 올랐어요.</p>
+        </div></div>
+      </div>
+      <div class="player card tap" tabindex="0">
         <div class="pos">외야수 · MVP 투표 2위</div>
-        <b>박승규</b>
+        <b class="plus">박승규</b>
+        <div class="more"><div>
         <div class="key">5경기 연속 안타 · 타율 5할</div>
         <p>1차전부터 5차전까지 모두 안타를 쳤어요. 4차전에서는 4타수 3안타 3타점.</p>
+        </div></div>
       </div>
-      <div class="player card">
+      <div class="player card tap" tabindex="0">
         <div class="pos">내야수</div>
-        <b>디아즈</b>
+        <b class="plus">디아즈</b>
+        <div class="more"><div>
         <div class="key">2차전 4안타 · 결승 득점</div>
         <p>2차전에서 선취 타점 3루타와 연장 10회 적시타를 쳤고, 12회 결승 득점까지 올렸어요.</p>
+        </div></div>
       </div>
-      <div class="player card">
+      <div class="player card tap" tabindex="0">
         <div class="pos">지명타자 · 베테랑</div>
-        <b>최형우</b>
+        <b class="plus">최형우</b>
+        <div class="more"><div>
         <div class="key">40대 베테랑의 힘</div>
         <p>2차전 2루타, 5차전 적시타로 힘을 보탰어요. 삼성으로 돌아와 우승까지 함께했어요.</p>
+        </div></div>
       </div>
-      <div class="player card pitcher">
+      <div class="player card tap pitcher" tabindex="0">
         <div class="pos">투수 · 에이스</div>
-        <b>원태인</b>
+        <b class="plus">원태인</b>
+        <div class="more"><div>
         <div class="key">5차전 선발승 · 5이닝 1실점</div>
         <p>우승을 확정한 5차전 선발투수로 승리를 따냈어요.</p>
+        </div></div>
       </div>
-      <div class="player card pitcher">
+      <div class="player card tap pitcher" tabindex="0">
         <div class="pos">투수 · 외국인</div>
-        <b>페덱</b>
+        <b class="plus">페덱</b>
+        <div class="more"><div>
         <div class="key">2차전 7이닝 1실점 · 5차전 4이닝 퍼펙트</div>
         <p>2차전 데일리 MVP. 5차전에서는 6회부터 12타자를 모두 잡아내며 세이브를 올리고 우승의 순간을 지켰어요.</p>
+        </div></div>
       </div>
-      <div class="player card pitcher">
+      <div class="player card tap pitcher" tabindex="0">
         <div class="pos">투수 · 외국인</div>
-        <b>후라도</b>
+        <b class="plus">후라도</b>
+        <div class="more"><div>
         <div class="key">3차전 7이닝 1실점 · 108구</div>
         <p>홈 대구 첫 경기에서 7이닝을 버티며 1승 1패 뒤 흐름을 삼성 쪽으로 가져왔어요.</p>
+        </div></div>
       </div>
-      <div class="player card">
+      <div class="player card tap" tabindex="0">
         <div class="pos">내야수</div>
-        <b>김영웅</b>
+        <b class="plus">김영웅</b>
+        <div class="more"><div>
         <div class="key">5차전 5타수 4안타 3타점</div>
         <p>우승을 확정한 5차전에서 3회 역전 적시타와 8회 쐐기 타점까지 올렸어요.</p>
+        </div></div>
       </div>
-      <div class="player card pitcher">
+      <div class="player card tap pitcher" tabindex="0">
         <div class="pos">투수</div>
-        <b>이재희</b>
+        <b class="plus">이재희</b>
+        <div class="more"><div>
         <div class="key">4차전 승리투수 · 데일리 MVP</div>
         <p>4차전 5회 위기에 올라 2⅔이닝 동안 안타 없이 삼진 4개, 무실점으로 막았어요.</p>
+        </div></div>
       </div>
-      <div class="player card">
+      <div class="player card tap wide" tabindex="0">
         <div class="pos">포수 · 베테랑</div>
-        <b>강민호</b>
+        <b class="plus">강민호</b>
+        <div class="more"><div>
         <div class="key">생애 첫 우승 반지 💍</div>
         <p>오랜 프로 생활 끝에 드디어 첫 한국시리즈 우승을 맛봤어요.</p>
+        </div></div>
       </div>
-      <div class="player card" style="border-left-color: var(--gold)">
+      <div class="player card tap wide" style="border-left-color: var(--gold)" tabindex="0">
         <div class="pos">감독</div>
-        <b>박진만</b>
+        <b class="plus">박진만</b>
+        <div class="more"><div>
         <div class="key">감독으로서 첫 우승</div>
         <p>사령탑을 맡은 뒤 처음으로 한국시리즈 정상에 올랐어요.</p>
+        </div></div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- 4-2. 전체 선수 기록 -->
+<section id="allstats" data-view="allstats" hidden style="padding-top:0">
+  <div class="wrap">
+    <h2>전체 선수 기록</h2>
+    <p class="sub">한국시리즈 5경기에 나온 삼성 선수 모두의 합계 기록<br>맨 윗줄의 기록 이름을 누르면 큰 순서대로 정렬돼요 · 한 번 더 누르면 작은 순서</p>
+    <div class="tabs" role="tablist">
+      <button type="button" class="on" data-tab="bat" role="tab" aria-selected="true">🏏 타자 (16명)</button>
+      <button type="button" data-tab="pit" role="tab" aria-selected="false">⚾ 투수 (12명)</button>
+    </div>
+    <div class="card stat-wrap"><table class="st" id="statTable"></table></div>
+    <div class="st-help" id="statHelp"></div>
+    <p class="note">※ 출처: 나무위키 「2026 신한 SOL KBO 포스트시즌」 문서의 시리즈 합계 표 (2026-11-18 기준). 팀 안타·득점·이닝 합계는 KBO 공식 스코어보드와 일치해요.<br>
+    루타·OPS·자책·9이닝 삼진은 그 표의 숫자로 계산했어요. 몇 타석·몇 이닝만 나온 선수는 숫자가 크게 튈 수 있어요.</p>
+  </div>
+</section>
+
 <!-- 5. 전문가들의 평가 -->
-<section id="experts" style="padding-top:0">
+<section id="experts" data-view="experts" hidden style="padding-top:0">
   <div class="wrap">
     <h2>전문가들의 평가</h2>
-    <p class="sub">언론과 구단이 꼽은 우승 비결 (기사 내용을 짧게 정리했어요)</p>
+    <p class="sub">언론과 구단이 꼽은 우승 비결<br>제목에 마우스를 올리면 (핸드폰은 누르면) 내용이 보여요</p>
     <div class="quotes">
-      <div class="quote card">
-        <h3>"야구 몰라요"를 보여준 우승</h3>
+      <div class="quote card reveal" tabindex="0">
+        <h3 class="plus">"야구 몰라요"를 보여준 우승</h3>
+        <div class="more"><div>
         <p>시리즈 전 대부분의 전문가는 정규시즌 1위 KT의 우승을 예상했어요. 하지만 삼성은 1차전을 내준 뒤 연장 12회 2차전을 잡으면서 흐름을 완전히 바꿨어요.</p>
         <div class="who">— 세계일보 칼럼</div>
+        </div></div>
       </div>
-      <div class="quote card">
-        <h3>큰돈 없이 만든 우승</h3>
+      <div class="quote card reveal" tabindex="0">
+        <h3 class="plus">큰돈 없이 만든 우승</h3>
+        <div class="more"><div>
         <p>스타 선수를 비싸게 사 오는 대신 사람과 시스템에 투자했어요. 선수 연봉 총액은 10개 구단 중 5위 수준이었지만, 꼭 필요한 곳(최형우 복귀, 외국인 선수 교체)에는 과감하게 투자했어요.</p>
         <div class="who">— 디지털데일리 · 뉴스핌 · 서울경제</div>
+        </div></div>
       </div>
-      <div class="quote card">
-        <h3>데이터로 키운 젊은 투수들</h3>
+      <div class="quote card reveal" tabindex="0">
+        <h3 class="plus">데이터로 키운 젊은 투수들</h3>
+        <div class="more"><div>
         <p>몸의 움직임을 분석하는 장비와 훈련 프로그램으로 선수마다 투구 특징을 분석했고, 그 결과 젊은 투수들이 핵심 전력으로 성장했어요.</p>
         <div class="who">— 뉴스핌</div>
+        </div></div>
       </div>
-      <div class="quote card">
-        <h3>주장의 투혼이 만든 원팀</h3>
+      <div class="quote card reveal" tabindex="0">
+        <h3 class="plus">주장의 투혼이 만든 원팀</h3>
+        <div class="more"><div>
         <p>포스트시즌 직전 다친 주장 구자욱이 아픈 몸으로 타율 5할을 치자 선수단이 하나로 뭉쳤다는 평가가 많아요. 부상 속 헌신은 MVP 투표에도 영향을 줬어요.</p>
         <div class="who">— 언론 보도 종합 · YTN</div>
+        </div></div>
       </div>
-      <div class="quote card">
-        <h3>바꾸고, 키우고, 뭉쳤다</h3>
+      <div class="quote card reveal" tabindex="0">
+        <h3 class="plus">바꾸고, 키우고, 뭉쳤다</h3>
+        <div class="more"><div>
         <p>구단은 우승 비결로 ① 문을 넓힌 체질 개선 ② 데이터에 바탕을 둔 육성 ③ 개인보다 팀을 앞세운 선수단의 헌신, 세 가지를 꼽았어요.</p>
         <div class="who">— 삼성 라이온즈 구단 자체 분석 (MHN스포츠 보도)</div>
+        </div></div>
       </div>
-      <div class="quote card">
-        <h3>시즌 전 예상은? "마운드가 관건"</h3>
+      <div class="quote card reveal" tabindex="0">
+        <h3 class="plus">시즌 전 예상은? "마운드가 관건"</h3>
+        <div class="more"><div>
         <p>개막 전 이대형 해설위원은 삼성의 타선은 막강하지만 마운드가 불안하다고 봤어요. 결국 가을에는 투수진이 버텨 주며 걱정을 이겨 냈어요.</p>
         <div class="who">— 스포티비뉴스 (2026시즌 개막 전 인터뷰)</div>
+        </div></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- 7. 축하 메시지 -->
-<section id="cheer" class="cheer" style="padding-top:0">
+<section id="cheer" data-view="cheer" hidden class="cheer" style="padding-top:0">
   <div class="wrap">
     <h2>축하 메시지 남기기</h2>
     <p class="sub">내 브라우저에만 저장돼요</p>
@@ -972,7 +1062,7 @@
 </section>
 
 <!-- 출처 -->
-<section style="padding-top:0">
+<section id="sources" style="padding-top:0" data-home>
   <div class="wrap">
     <div class="sources card">
       <b>📰 참고한 기사</b>
@@ -1033,7 +1123,7 @@
   resize();
 
   // 화면이 넓을수록 꽃가루를 더 많이 만들어요
-  const count = Math.round(canvas.width / 8);
+  const count = Math.round(Math.max(canvas.width, window.innerWidth) / 8);
   for (let i = 0; i < count; i++) {
     pieces.push({
       x: Math.random() * canvas.width,
@@ -1229,6 +1319,137 @@
       "</div>";
     gameList.appendChild(el);
   }
+
+  // ===== 선수 카드: 누르면 펼치고 다시 누르면 접기 =====
+  document.querySelectorAll(".tap").forEach((el) => {
+    el.setAttribute("role", "button");
+    el.setAttribute("aria-expanded", "false");
+    const toggle = () => el.setAttribute("aria-expanded", el.classList.toggle("open"));
+    el.addEventListener("click", toggle);
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+  });
+
+  // ===== 전체 선수 기록 (한국시리즈 5경기 합계) =====
+  // 타자: [선수, 타수, 안타, 홈런, 사사구, 삼진, 도루, 타점, 득점, 타율, 출루율, 장타율]
+  const BAT = [
+    ["디아즈",22,7,0,2,5,0,4,4,.318,.375,.455], ["구자욱",20,10,1,4,3,0,6,5,.500,.565,.850],
+    ["김지찬",18,5,0,6,2,0,2,6,.278,.458,.389], ["이재현",17,3,0,6,6,0,3,4,.176,.391,.235],
+    ["김영웅",17,7,0,1,4,0,4,3,.412,.444,.412], ["박승규",16,8,1,2,2,0,4,6,.500,.556,.750],
+    ["류지혁",15,1,0,7,2,0,2,4,.067,.333,.067], ["최형우",14,5,0,0,3,0,2,1,.357,.357,.429],
+    ["김성윤",13,4,0,2,1,1,2,3,.308,.400,.308], ["강민호",12,1,0,1,4,0,1,1,.083,.154,.083],
+    ["전병우",7,0,0,0,3,0,0,0,.000,.000,.000], ["김도환",4,1,0,0,1,0,3,0,.250,.250,.500],
+    ["김상준",2,1,0,0,1,0,0,0,.500,.500,.500], ["김헌곤",2,0,0,0,2,0,0,0,.000,.000,.000],
+    ["김현준",2,0,0,0,0,0,0,0,.000,.000,.000], ["박계범",1,0,0,0,1,0,0,0,.000,.000,.000]
+  ];
+  // 투수: [선수, 아웃 수(이닝×3), 승, 패, 세이브, 홀드, 삼진, 피안타, 볼넷, 실점, 평균자책, WHIP]
+  const PIT = [
+    ["페덱",33,0,0,1,0,8,8,1,1,0.82,0.82], ["후라도",21,1,0,0,0,6,6,0,1,1.29,0.86],
+    ["원태인",20,1,0,0,0,5,6,3,2,1.35,1.35], ["장찬희",18,0,0,0,0,2,4,3,3,4.50,1.17],
+    ["김태훈",11,1,0,0,0,5,1,0,1,2.45,0.27], ["이승민",10,0,0,0,1,3,2,0,0,0.00,0.60],
+    ["이재희",8,1,0,0,0,4,0,0,0,0.00,0.00], ["배찬승",7,0,0,1,0,3,1,5,0,0.00,2.57],
+    ["최원태",6,0,1,0,0,3,5,1,5,22.50,3.00], ["양창섭",5,0,0,0,0,2,1,4,0,0.00,3.00],
+    ["사토시",1,0,0,0,0,0,1,3,3,81.00,12.00], ["임기영",1,0,0,0,0,0,1,0,1,27.00,3.00]
+  ];
+  const f3 = (v) => v.toFixed(3).replace(/^0/, "");
+  const f2 = (v) => v.toFixed(2);
+  const ip = (o) => {
+    const w = Math.floor(o / 3), r = o % 3;
+    return ((w ? w : "") + (r === 1 ? "⅓" : r === 2 ? "⅔" : "")) || "0";
+  };
+  // 칸: [기록 이름, 설명, 보여 주는 방법]
+  const TABLES = {
+    bat: {
+      rows: BAT.map((b) => ({ 선수: b[0], 타수: b[1], 안타: b[2], 홈런: b[3], 타점: b[7], 득점: b[8], 사사구: b[4], 삼진: b[5], 도루: b[6],
+        루타: Math.round(b[11] * b[1]), 타율: b[9], 출루율: b[10], 장타율: b[11], OPS: b[10] + b[11] })),
+      cols: [["타수", "타석에서 볼넷·몸에 맞는 공 등을 뺀 수"], ["안타"], ["홈런"], ["타점", "내 타격으로 들어온 점수"], ["득점", "내가 홈을 밟은 수"],
+        ["사사구", "볼넷 + 몸에 맞는 공"], ["삼진"], ["도루"], ["루타", "안타 1, 2루타 2, 3루타 3, 홈런 4로 더한 값"],
+        ["타율", "안타 ÷ 타수", f3], ["출루율", "살아서 나간 비율", f3], ["장타율", "루타 ÷ 타수", f3], ["OPS", "출루율 + 장타율", f3]]
+    },
+    pit: {
+      rows: PIT.map((p) => ({ 선수: p[0], 이닝: p[1], 승: p[2], 패: p[3], 세이브: p[4], 홀드: p[5], 탈삼진: p[6], 피안타: p[7], 볼넷: p[8],
+        실점: p[9], 자책: Math.round(p[10] * p[1] / 27), 평균자책: p[10], WHIP: p[11], "9이닝 삼진": p[6] * 27 / p[1] })),
+      cols: [["이닝", "던진 이닝 (⅓ = 아웃 1개)", ip], ["승"], ["패"], ["세이브"], ["홀드"], ["탈삼진"], ["피안타", "맞은 안타"], ["볼넷"],
+        ["실점"], ["자책", "투수 책임인 실점"], ["평균자책", "9이닝 동안 내준 자책점 · 낮을수록 좋아요", f2],
+        ["WHIP", "이닝마다 내보낸 주자(안타+볼넷) · 낮을수록 좋아요", f2], ["9이닝 삼진", "9이닝마다 잡는 삼진 수", (v) => v.toFixed(1)]]
+    }
+  };
+  const statTable = document.getElementById("statTable");
+  const statHelp = document.getElementById("statHelp");
+  let tab = "bat", sortKey = null, asc = false;
+
+  function drawStats() {
+    const T = TABLES[tab];
+    const rows = T.rows.slice();
+    if (sortKey === "선수") rows.sort((a, b) => (asc ? -1 : 1) * a.선수.localeCompare(b.선수, "ko"));
+    else if (sortKey) rows.sort((a, b) => asc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]);
+    const thCls = (k) => sortKey === k ? " class='sorted" + (asc ? " asc" : "") + "'" : "";
+    let h = "<thead><tr><th" + thCls("선수") + "><button type='button' data-k='선수'>선수</button></th>";
+    for (const [k, tip] of T.cols) h += "<th" + thCls(k) + (tip ? " title='" + tip + "'" : "") + "><button type='button' data-k='" + k + "'>" + k + "</button></th>";
+    h += "</tr></thead><tbody>";
+    for (const r of rows) {
+      h += "<tr><td" + (sortKey === "선수" ? " class='sorted'" : "") + ">" + r.선수 + "</td>";
+      for (const [k, , fmt] of T.cols) h += "<td" + (sortKey === k ? " class='sorted'" : "") + ">" + (fmt ? fmt(r[k]) : r[k]) + "</td>";
+      h += "</tr>";
+    }
+    statTable.innerHTML = h + "</tbody>";
+    statHelp.innerHTML = T.cols.filter((c) => c[1]).map((c) => "<span><b>" + c[0] + "</b> " + c[1] + "</span>").join("");
+  }
+  statTable.addEventListener("click", (e) => {
+    const b = e.target.closest("th");
+    if (!b) return;
+    const k = b.querySelector("button").dataset.k;
+    if (sortKey === k) asc = !asc; else { sortKey = k; asc = false; }
+    drawStats();
+    statTable.querySelector("button[data-k='" + k + "']").focus();
+  });
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".tabs button").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b); });
+    tab = b.dataset.tab; sortKey = null; asc = false;
+    drawStats();
+  }));
+  drawStats();
+
+  // ===== 목록 ↔ 한 화면 보기 (주소 # 으로 이동, 브라우저 뒤로가기도 돼요) =====
+  const homeParts = document.querySelectorAll("[data-home]");
+  const viewParts = document.querySelectorAll("[data-view]");
+  const backbar = document.getElementById("backbar");
+  const viewTitle = document.getElementById("viewTitle");
+  const baseTitle = document.title;
+  let lastView = null;
+
+  function route() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const target = id ? document.getElementById(id) : null;
+    const box = target ? target.closest("[data-view]") : null;
+    const view = box ? box.dataset.view : null;
+
+    homeParts.forEach((el) => { el.hidden = !!view; });
+    viewParts.forEach((el) => { el.hidden = el.dataset.view !== view; });
+    backbar.hidden = !view;
+    document.body.classList.toggle("detail", !!view);
+
+    if (view) {
+      const card = document.querySelector(".menu a[href='#" + view + "']");
+      const name = card ? card.dataset.title : "";
+      viewTitle.textContent = name;
+      document.title = name + " · " + baseTitle;
+      lastView = view;
+      // 묶음의 첫 부분이면 맨 위로, 아니면 그 위치로
+      if (target === document.querySelector("[data-view='" + view + "']")) window.scrollTo({ top: 0, behavior: "instant" });
+      else target.scrollIntoView({ behavior: "instant" });
+    } else {
+      document.title = baseTitle;
+      resize();
+      // 방금 보던 카드로 돌아와요
+      const card = lastView && document.querySelector(".menu a[href='#" + lastView + "']");
+      if (card) { card.scrollIntoView({ behavior: "instant", block: "center" }); card.focus({ preventScroll: true }); }
+      else if (!id) window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }
+  window.addEventListener("hashchange", route);
+  route();
 
   // ===== 축하 메시지 (내 컴퓨터 브라우저에 저장) =====
   const list = document.getElementById("messages");
